@@ -1,0 +1,52 @@
+# KAKOI 囲い塗りペイント（PWA版）
+
+ブラウザで動く KAKOI を、Mac や iPad に「アプリ」として入れて使うための一式です。
+一度開けば、以後はネットにつながっていなくても起動できます。
+
+## フォルダの中身
+
+| ファイル | 役割 |
+| --- | --- |
+| `index.html` | アプリ本体 |
+| `manifest.webmanifest` | アプリ名・アイコン・開けるファイルの種類 |
+| `sw.js` | オフラインで動かすための仕組み（Service Worker） |
+| `icons/` | アイコン一式 |
+| `README.md` | この説明 |
+
+## GitHub Pages で公開する
+
+1. [github.com](https://github.com) でアカウントを作ります。
+2. 右上の「＋」→「New repository」を選び、Repository name に `kakoi` と入れます。
+   「Public」を選んで「Create repository」を押します。
+   - 無料プランで GitHub Pages を使うには Public が必要です。
+   - 公開されるのはアプリのプログラムだけです。描いた絵はアップロードされず、各自のブラウザ内と、自分で保存したファイルにだけ残ります。
+3. 作ったリポジトリの画面で「uploading an existing file」（または「Add file」→「Upload files」）を開きます。
+   このフォルダの**中身**（`index.html`・`manifest.webmanifest`・`sw.js`・`README.md`・`icons` フォルダ）をまとめてドラッグし、「Commit changes」を押します。
+   - `icons` はフォルダごとドラッグしてください。
+   - ブラウザがフォルダを受け付けない場合は、[GitHub Desktop](https://desktop.github.com) を使うと確実です。
+4. リポジトリの「Settings」→ 左の「Pages」を開きます。
+   「Build and deployment」の Source を「Deploy from a branch」、Branch を `main` と `/ (root)` にして「Save」を押します。
+5. 1〜2分待つと、Pages の画面の上に `https://ユーザー名.github.io/kakoi/` が表示されます。これがアプリの住所です。
+
+## インストールする
+
+- **Mac（Chrome・Edge）**：上の住所を開き、アドレスバー右端のインストールアイコン、またはアプリ上部の「インストール」ボタンを押します。専用ウィンドウで起動し、Dock に置けます。
+- **Mac（Safari 17 以降）**：メニューの「ファイル」→「Dock に追加」。
+- **iPad・iPhone**：Safari で開き、共有ボタン →「ホーム画面に追加」。
+
+## .kakoi ファイルをダブルクリックで開く（Chrome・Edge でインストールした場合）
+
+Finder で `.kakoi` ファイルを右クリック →「このアプリケーションで開く」→「KAKOI」を選びます。
+いつも KAKOI で開きたい場合は、ファイルを選んで「情報を見る」→「このアプリケーションで開く」で KAKOI を選び、「すべてを変更」を押します。PSD も同じ方法で KAKOI に渡せます。
+
+## 更新のしかた
+
+- 新しい `index.html` を、同じ名前のままリポジトリにアップロードし直して「Commit changes」を押します。数分で公開されます。アプリはネットにつながったときに最新版を読み込みます（すぐ変わらないときは、アプリを開き直してください）。
+- アイコンや `sw.js` を変えたときは、`sw.js` の先頭にある `VERSION` を `kakoi-pwa-2` のように上げてからアップロードします。
+
+## 気をつけること
+
+- **自動保存は場所ごとに別です。** Claude の画面の KAKOI、Mac のアプリ版、iPad のアプリ版は、それぞれ別々に自動保存しています。大事な絵は「保存」で `.kakoi` ファイルにしておくと、どこでも開けます。
+- **保存先を選ぶ画面と上書き保存は、Chrome・Edge のときだけ**使えます。Safari（iPad を含む）では「ダウンロード」フォルダや「ファイル」アプリに保存されます。
+- ブラウザの「サイトデータを消去」をすると、アプリの自動保存も消えます。
+- 公開せずに手元で試すだけなら、このフォルダでターミナルを開いて `python3 -m http.server 8000` を実行し、`http://localhost:8000` を開きます。`index.html` をダブルクリックで開いた場合は、オフラインの仕組みは働きません（描くことはできます）。
