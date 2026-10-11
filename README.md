@@ -13,6 +13,22 @@
 | `icons/` | アイコン一式 |
 | `README.md` | この説明 |
 
+## GitHub Pages で公開する
+
+1. [github.com](https://github.com) でアカウントを作ります。
+2. 右上の「＋」→「New repository」を選び、Repository name に `kakoi` と入れます。
+   「Public」を選んで「Create repository」を押します。
+   - 無料プランで GitHub Pages を使うには Public が必要です。
+   - 公開されるのはアプリのプログラムだけです。描いた絵はアップロードされず、各自のブラウザ内と、自分で保存したファイルにだけ残ります。
+3. 作ったリポジトリの画面で「uploading an existing file」（または「Add file」→「Upload files」）を開きます。
+   このフォルダの**中身**（`index.html`・`manifest.webmanifest`・`sw.js`・`README.md`・`icons` フォルダ）をまとめてドラッグし、「Commit changes」を押します。
+   - `icons` はフォルダごとドラッグしてください。
+   - ブラウザがフォルダを受け付けない場合は、[GitHub Desktop](https://desktop.github.com) を使うと確実です。
+4. リポジトリの「Settings」→ 左の「Pages」を開きます。
+   「Build and deployment」の Source を「Deploy from a branch」、Branch を `main` と `/ (root)` にして「Save」を押します。
+5. 1〜2分待つと、Pages の画面の上に `https://ユーザー名.github.io/kakoi/` が表示されます。これがアプリの住所です。
+
+
 ## インストールする
 
 - **Mac（Chrome・Edge）**：上の住所を開き、アドレスバー右端のインストールアイコン、またはアプリ上部の「インストール」ボタンを押します。専用ウィンドウで起動し、Dock に置けます。
