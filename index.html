@@ -113,7 +113,44 @@ button{touch-action:manipulation}
 .pop>button:hover{background:var(--panel-2)}
 
 /* main grid */
-.main{display:grid;grid-template-columns:54px minmax(0,1fr) 300px;min-height:0}
+.main{display:grid;grid-template-columns:var(--rail-w,54px) minmax(0,1fr) var(--panel-w,300px);min-height:0}
+.main>.rail{grid-column:1;grid-row:1}
+.main>.center{grid-column:2;grid-row:1}
+.main>#panel{grid-column:3;grid-row:1}
+.main.no-rail{--rail-w:0px}
+.main.no-panel{--panel-w:0px}
+.main.no-panel>#panel{display:none}
+.gone{display:none !important}
+.hidden-win{display:none !important}
+#floatLayer{position:fixed;inset:0;z-index:36;pointer-events:none}
+#floatLayer>*{pointer-events:auto}
+.sec.floating{position:absolute;width:300px;max-height:calc(100vh - 16px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.26);padding:0 14px 14px;resize:both;min-width:240px;min-height:46px}
+.sec.floating>h2{position:sticky;top:0;z-index:3;background:var(--panel);margin:0 -14px 8px;padding:10px 10px 8px 14px;cursor:move;border-bottom:1px solid var(--line);border-radius:12px 12px 0 0}
+.sec.floating.collapsed{resize:none;height:auto !important;min-height:0}
+.sec.floating.collapsed>h2{margin-bottom:0;border-bottom:0}
+#panel .sec>h2{cursor:grab}
+.sec>h2{touch-action:none;gap:8px;justify-content:flex-start}
+.sec.collapsed>:not(h2){display:none}
+.sec.collapsed{padding-bottom:10px}
+.wctl{display:inline-flex;gap:2px;margin-left:auto;flex:none}
+.wbtn{width:26px;height:26px;border:0;border-radius:6px;background:transparent;color:var(--ink-3);cursor:pointer;display:grid;place-items:center;padding:0}
+.wbtn:hover{background:var(--panel-2);color:var(--ink)}
+.wbtn svg{width:15px;height:15px}
+.pm-row{margin:-2px 0 10px}
+.pm-row .pm-seg{display:flex}
+.pm-row .pm-seg button{flex:1}
+.rail-grip{width:34px;height:14px;flex:none;display:grid;place-items:center;color:var(--ink-3);cursor:grab;touch-action:none;border-radius:4px;margin-bottom:2px}
+.rail-grip:hover{background:var(--panel-2);color:var(--ink)}
+.rail-grip svg{width:20px;height:10px}
+.rail.floating{position:absolute;height:auto;max-height:calc(100vh - 16px);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.26);padding:6px 6px 8px;width:auto}
+.rail.floating .grow{display:none}
+.rail.floating .rail-grip{cursor:move}
+.pop .mcheck{display:flex;align-items:center;gap:8px;height:30px;padding:0 10px;font-size:13px;cursor:pointer;border-radius:6px;white-space:nowrap}
+.pop .mcheck:hover{background:var(--panel-2)}
+.pop .mcheck input{width:16px;height:16px;margin:0;accent-color:var(--accent)}
+.tl-field input.narrow{width:52px}
+#app.ui-hidden .rail,#app.ui-hidden #panel,#app.ui-hidden #floatLayer,#app.ui-hidden .timeline{display:none !important}
+#app.ui-hidden .main{--rail-w:0px;--panel-w:0px}
 .rail{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;background:var(--panel);border-right:1px solid var(--line);overflow-y:auto}
 .tool{width:40px;height:40px;border:0;border-radius:9px;background:transparent;display:grid;place-items:center;cursor:pointer;flex:none}
 .tool:hover{background:var(--panel-2)}
@@ -265,7 +302,8 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 .help h3{margin:14px 0 6px;font-size:12px;color:var(--ink-2)}
 
 @media (max-width: 860px){
-  .main{grid-template-columns:48px minmax(0,1fr)}
+  .main{grid-template-columns:var(--rail-w,48px) minmax(0,1fr)}
+  .main>#panel{grid-column:auto}
   .tool{width:38px;height:38px}
   #panel{position:fixed;z-index:40;right:0;top:calc(46px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);width:min(312px,88vw);transform:translateX(104%);transition:transform .2s ease;box-shadow:-14px 0 34px rgba(0,0,0,.22)}
   #panel.open{transform:none}
@@ -313,6 +351,19 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       </div></div>
     <button class="tb" id="btnFit" title="全体を表示 (F)" aria-label="全体を表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     <span class="vsep hide-sm"></span>
+    <div class="popwrap"><button class="tb" id="btnWin" title="ウィンドウ" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 14h4"/></svg><span class="tb-label">ウィンドウ</span></button>
+      <div class="pop right" id="winMenu" role="menu" hidden>
+        <label class="mcheck"><input type="checkbox" data-win="rail"><span>ツール</span></label>
+        <label class="mcheck"><input type="checkbox" data-win="color"><span>色</span></label>
+        <label class="mcheck"><input type="checkbox" data-win="tool"><span>ツール設定</span></label>
+        <label class="mcheck"><input type="checkbox" data-win="layers"><span>レイヤー</span></label>
+        <label class="mcheck"><input type="checkbox" data-win="timeline"><span>タイムライン</span></label>
+        <hr>
+        <button role="menuitem" data-act="floatAll">すべて切り離す</button>
+        <button role="menuitem" data-act="reset">配置を元に戻す</button>
+        <button role="menuitem" data-act="hideUI">画面を広く使う<span class="k">Tab</span></button>
+        <p class="note" style="margin:6px 10px 4px;max-width:240px">パネルの見出しをドラッグすると、ウィンドウとして好きな場所に置けます。右下の角で大きさも変えられます。</p>
+      </div></div>
     <button class="tb" id="btnInstall" title="アプリとしてインストール" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M12 8v7"/><path d="m9 12 3 3 3-3"/></svg><span class="tb-label">インストール</span></button>
     <button class="tb" id="btnHelp" title="操作のヒント" aria-label="操作のヒント"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.6"/><path d="M12 17h.01"/></svg></button>
     <button class="tb panel-toggle" id="btnPanel" title="設定パネル" aria-label="設定パネルを開く" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
@@ -320,6 +371,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 
   <div class="main">
     <nav class="rail" aria-label="ツール">
+      <div class="rail-grip" id="railGrip" title="ドラッグで好きな場所へ（ダブルクリックで戻す）"><svg viewBox="0 0 24 12" fill="currentColor"><circle cx="7" cy="3" r="1.4"/><circle cx="12" cy="3" r="1.4"/><circle cx="17" cy="3" r="1.4"/><circle cx="7" cy="9" r="1.4"/><circle cx="12" cy="9" r="1.4"/><circle cx="17" cy="9" r="1.4"/></svg></div>
       <button class="tool" data-tool="fill" title="囲い塗り (L)" aria-label="囲い塗り"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10 11 4l8.5 4.5-2.2 9-9.8 2.7z" fill="currentColor" fill-opacity=".28"/><path d="M4.5 10 11 4l8.5 4.5-2.2 9-9.8 2.7z"/></svg></button>
       <button class="tool" data-tool="brush" title="ブラシ (B)" aria-label="ブラシ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18.6 3.6c.9.9.9 2.1 0 3L11.2 14 9.9 12.7l7.3-8.9c.4-.4 1-.5 1.4-.2z"/><path d="M9.6 13.6c-2.1 0-3.6 1.4-3.6 3.3 0 1.4-.7 2.3-2 2.8 3.7 1 7.4-.4 7.4-3.9z"/></svg></button>
       <button class="tool" data-tool="lineblend" title="ラインブレンド (J)" aria-label="ラインブレンド"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 17.5 17.5 6.5"/><circle cx="5" cy="19" r="2.4" fill="currentColor"/><circle cx="19" cy="5" r="2.4"/></svg></button>
@@ -351,7 +403,9 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
           <button class="tlb" id="tlNext" title="次のコマ（→）" aria-label="次のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
           <button class="tlb" id="tlLast" title="最後のコマ" aria-label="最後のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14"/><path d="m6 6 8 6-8 6z"/></svg></button>
           <span class="tl-frame"><b id="tlFrame">1 / 24</b><small id="tlTime">0.00秒</small></span>
-          <button class="tlb" id="tlLoop" title="くり返し再生" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l3 3-3 3"/><path d="M4 11V9a3 3 0 0 1 3-3h13"/><path d="M7 21l-3-3 3-3"/><path d="M20 13v2a3 3 0 0 1-3 3H4"/></svg></button>
+          <label class="tl-field" title="再生のしかた">再生 <select id="tlLoopMode"><option value="loop">ループ</option><option value="pingpong">往復</option><option value="once">1回</option></select></label>
+          <label class="tl-field" title="再生する範囲（コマ）">範囲 <input class="field narrow" type="number" id="tlIn" min="1"> 〜 <input class="field narrow" type="number" id="tlOut" min="1"></label>
+          <button class="mini" id="tlRangeAll" title="範囲を全体に戻す">全体</button>
           <label class="tl-field">fps <select id="tlFps"><option>8</option><option>10</option><option>12</option><option>15</option><option>24</option><option>25</option><option>30</option><option>60</option></select></label>
           <label class="tl-field">長さ <input class="field" type="number" id="tlLen" min="1" max="1200"> コマ</label>
           <span class="tl-sep"></span>
@@ -370,7 +424,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
               <label class="check"><input type="checkbox" id="onTint"><span>色をつける（前＝赤・後＝緑）</span></label>
               <p class="note">選んでいるレイヤーの、前後の絵を薄く重ねて表示します。</p>
             </div></div>
-          <label class="tl-field" title="別のコマで描き始めたとき、自動で新しい絵を作るか">自動コマ <select id="tlAuto"><option value="off">しない</option><option value="blank">白紙</option><option value="copy">複製</option></select></label>
+          <label class="tl-field" title="絵のないコマで描いたとき、そのコマに新しい絵を自動で作るか">自動コマ <select id="tlAuto"><option value="blank">白紙で作る</option><option value="copy">複製して作る</option><option value="off">作らない</option></select></label>
           <span class="tl-sep"></span>
           <button class="mini strong" id="tlExport" title="コンポジット用に連番 PNG で書き出す">連番書き出し…</button>
           <span class="tl-mem" id="tlMem"></span>
@@ -382,7 +436,8 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 
     <aside id="panel" aria-label="設定">
       <section class="sec" id="colorSec">
-        <h2>色<span class="pm-seg" id="pickMode" role="group" aria-label="色の選び方"><button type="button" data-m="square">四角</button><button type="button" data-m="wheel">ホイール</button><button type="button" data-m="hl">色相×明るさ</button></span></h2>
+        <h2>色<span class="wctl"><button class="wbtn" type="button" data-wact="float"></button><button class="wbtn" type="button" data-wact="fold"></button></span></h2>
+        <div class="pm-row"><span class="pm-seg" id="pickMode" role="group" aria-label="色の選び方"><button type="button" data-m="square">四角</button><button type="button" data-m="wheel">ホイール</button><button type="button" data-m="hl">色相×明るさ</button></span></div>
         <div class="pm" id="pmSquare">
           <div class="sv" id="sv"><canvas id="svCanvas"></canvas><div class="knob" id="svKnob"></div></div>
           <div class="hue" id="hue"><canvas id="hueCanvas"></canvas><div class="knob" id="hueKnob"></div></div>
@@ -418,13 +473,13 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
         <div class="recent" id="recent"></div>
       </section>
 
-      <section class="sec">
-        <h2><span id="toolTitle">囲い塗り</span><kbd id="toolKey">L</kbd></h2>
+      <section class="sec" id="toolSec">
+        <h2><span id="toolTitle">囲い塗り</span><kbd id="toolKey">L</kbd><span class="wctl"><button class="wbtn" type="button" data-wact="float"></button><button class="wbtn" type="button" data-wact="fold"></button></span></h2>
         <div id="toolBox"></div>
       </section>
 
-      <section class="sec">
-        <h2>レイヤー</h2>
+      <section class="sec" id="layerSec">
+        <h2>レイヤー<span class="wctl"><button class="wbtn" type="button" data-wact="float"></button><button class="wbtn" type="button" data-wact="fold"></button></span></h2>
         <ul class="layers" id="layerList"></ul>
         <div class="lactions">
           <button class="mini" id="lyAdd">追加</button>
@@ -441,10 +496,12 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
           <label class="ctl"><span>不透明度</span><input type="range" id="lyOpacity" min="0" max="100"><output id="lyOpacityOut">100%</output></label>
           <label class="check"><input type="checkbox" id="lyLock"><span>透明部分を保護（はみ出さずに塗る）</span></label>
           <label class="check"><input type="checkbox" id="lyClip"><span>下のレイヤーでクリッピング</span></label>
+          <label class="check" title="オフにすると、どのコマで描いても最初の絵に描き足します（背景など）"><input type="checkbox" id="lyAnim"><span>アニメーションするレイヤー（自動でコマを作る）</span></label>
         </div>
       </section>
     </aside>
   </div>
+  <div id="floatLayer"></div>
 </div>
 
 <input type="file" id="fileOpen" hidden>
@@ -508,7 +565,15 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>Enter</dt><dd>再生・停止</dd>
       <dt>N / Shift+N</dt><dd>このコマに白紙の絵を作る／直前の絵を複製する</dd>
       <dt>O</dt><dd>オニオンスキンの表示・非表示</dd>
-      <dt>しくみ</dt><dd>各レイヤーの絵は、次の絵があるコマまで続けて表示されます（コマ打ちは絵の間隔で決まります）。背景のように動かないレイヤーは、最初の絵が最後まで続きます</dd>
+      <dt>自動コマ</dt><dd>絵のないコマで描くと、そのコマに新しい絵を自動で作ります。消しゴム・ゆがみ・移動は、直前の絵を複製してから直します。背景など動かないレイヤーは、レイヤーの「アニメーションするレイヤー」をオフにすると、最初の絵に描き足されます</dd>
+      <dt>再生</dt><dd>タイムラインの「再生」でループ・往復・1回を選び、「範囲」で再生するコマを絞れます</dd>
+      <dt>しくみ</dt><dd>各レイヤーの絵は、次の絵があるコマまで続けて表示されます（コマ打ちは絵の間隔で決まります）</dd>
+    </dl>
+    <h3>ウィンドウ</h3>
+    <dl>
+      <dt>見出しをドラッグ</dt><dd>色・ツール設定・レイヤーをウィンドウとして切り離し、好きな場所に置けます。ツールの列は上の点々をドラッグします</dd>
+      <dt>Tab</dt><dd>パネルを一時的に隠して、画面を広く使います</dd>
+      <dt>ウィンドウ</dt><dd>上のメニューで表示・非表示、すべて切り離す、配置を元に戻す</dd>
     </dl>
     <h3>表示</h3>
     <dl>
@@ -526,7 +591,8 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <div class="dlg-actions"><button class="primary" id="helpClose">閉じる</button></div>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.2（2026年10月13日）</p>
+    <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
 
@@ -972,12 +1038,19 @@ function allocScratch(){
   onionBuf = mk(DW, DH); onionCtx = onionBuf.getContext('2d');
 }
 /* ================= アニメーション（コマ）の土台 ================= */
-const anim = { frames: 24, fps: 12, cur: 0, loop: true, playing: false, autoKey: 'off', onion: { on: false, prev: 2, next: 1, opacity: 30, tint: true } };
+const anim = { frames: 24, fps: 12, cur: 0, loopMode: 'loop', rangeIn: 0, rangeOut: null, playing: false, autoKey: 'blank', onion: { on: false, prev: 2, next: 1, opacity: 30, tint: true } };
 try {
   const o = JSON.parse(localStorage.getItem('kakoi.anim') || 'null');
-  if (o){ if (o.onion) Object.assign(anim.onion, o.onion); if (['off', 'blank', 'copy'].includes(o.autoKey)) anim.autoKey = o.autoKey; if (typeof o.loop === 'boolean') anim.loop = o.loop; }
+  if (o){ if (o.onion) Object.assign(anim.onion, o.onion); if (o.v === 2 && ['off', 'blank', 'copy'].includes(o.autoKey)) anim.autoKey = o.autoKey; if (['loop', 'pingpong', 'once'].includes(o.loopMode)) anim.loopMode = o.loopMode; }
 } catch (e) {}
-function saveAnimPrefs(){ try { localStorage.setItem('kakoi.anim', JSON.stringify({ onion: anim.onion, autoKey: anim.autoKey, loop: anim.loop })); } catch (e) {} }
+function saveAnimPrefs(){ try { localStorage.setItem('kakoi.anim', JSON.stringify({ v: 2, onion: anim.onion, autoKey: anim.autoKey, loopMode: anim.loopMode })); } catch (e) {} }
+function playRange(){ const a = clamp(anim.rangeIn | 0, 0, anim.frames - 1), b = clamp(anim.rangeOut == null ? anim.frames - 1 : anim.rangeOut, a, anim.frames - 1); return { a, b }; }
+const animMeta = () => ({ frames: anim.frames, fps: anim.fps, loop: anim.loopMode !== 'once', loopMode: anim.loopMode, rangeIn: anim.rangeIn, rangeOut: anim.rangeOut });
+function readAnimMeta(m){
+  if (!m) return;
+  anim.frames = clamp(m.frames | 0 || 24, 1, 1200); anim.fps = clamp(+m.fps || 12, 1, 120);
+  anim.rangeIn = clamp(m.rangeIn | 0, 0, anim.frames - 1); anim.rangeOut = m.rangeOut == null ? null : clamp(m.rangeOut | 0, 0, anim.frames - 1);
+}
 let EMPTY = null, EMPTY_CTX = null, onionBuf = null, onionCtx = null;
 function newCel(){ const c = mk(DW, DH); return { canvas: c, ctx: c.getContext('2d'), dirty: true, buf: null }; }
 function heldKey(L, f){ let best = -1; for (const k of L.cels.keys()) if (k <= f && k > best) best = k; return best; }
@@ -985,12 +1058,14 @@ function heldCel(L, f = anim.cur){ const k = heldKey(L, f); return k < 0 ? null 
 function sortedKeys(L){ return [...L.cels.keys()].sort((a, b) => a - b); }
 let lastNewCel = null;
 // 描く前に呼ぶ：このコマに描ける絵（セル）がなければ用意する
-function ensureCel(L){
+let autoKeyTold = false;
+function ensureCel(L, modify){
   const k = heldKey(L, anim.cur);
   if (k === anim.cur) return;
-  if (k >= 0 && anim.autoKey === 'off') return;
+  if (k >= 0 && (anim.autoKey === 'off' || !L.anim)) return;
   const cel = newCel();
-  if (k >= 0 && anim.autoKey === 'copy') cel.ctx.drawImage(L.cels.get(k).canvas, 0, 0);
+  if (k >= 0 && (modify || anim.autoKey === 'copy')) cel.ctx.drawImage(L.cels.get(k).canvas, 0, 0);
+  if (k >= 0 && !autoKeyTold){ autoKeyTold = true; toast('このコマに新しい絵を作りました（自動コマ）'); }
   L.cels.set(anim.cur, cel);
   lastNewCel = { L, f: anim.cur, cel };
   drawTimeline(); syncAnimUI(); warnMemory();
@@ -999,6 +1074,9 @@ async function celBytes(cel){
   if (!cel.buf || cel.dirty){ cel.dirty = false; cel.buf = await (await canvasBlob(cel.canvas)).arrayBuffer(); }
   return new Uint8Array(cel.buf);
 }
+function dropNewCel(nc){
+  if (nc && nc.L.cels.get(nc.f) === nc.cel){ nc.L.cels.delete(nc.f); updateThumb(nc.L); drawTimeline(); syncAnimUI(); requestRender(true); }
+}
 function celCount(){ let n = 0; for (const L of layers) n += L.cels.size; return n; }
 const memMB = () => Math.round(celCount() * DW * DH * 4 / 1048576);
 let memWarned = false;
@@ -1006,7 +1084,7 @@ function warnMemory(){ const mb = memMB(); if (mb > 900 && !memWarned){ memWarne
 function makeLayer(name, noCel){
   const t = document.createElement('canvas');
   t.className = 'thumb';
-  const L = { id: ++idSeq, name: name ?? `レイヤー ${++nameSeq}`, cels: new Map(), visible: true, opacity: 1, blend: 'source-over', lock: false, clip: false, thumb: t };
+  const L = { id: ++idSeq, name: name ?? `レイヤー ${++nameSeq}`, cels: new Map(), anim: name !== '背景', visible: true, opacity: 1, blend: 'source-over', lock: false, clip: false, thumb: t };
   Object.defineProperty(L, 'canvas', { get(){ const c = heldCel(L); return c ? c.canvas : EMPTY; } });
   Object.defineProperty(L, 'ctx', { get(){ const c = heldCel(L); return c ? c.ctx : EMPTY_CTX; } });
   if (!noCel) L.cels.set(0, newCel());
@@ -1026,7 +1104,7 @@ function updateThumb(L){
 function resetDoc(w, h){
   if (anim.playing) stopPlay();
   DW = w; DH = h; idSeq = 0; nameSeq = 0; op = null; xf = null;
-  anim.cur = 0; anim.frames = 24; anim.fps = 12; lastNewCel = null; memWarned = false;
+  anim.cur = 0; anim.frames = 24; anim.fps = 12; anim.rangeIn = 0; anim.rangeOut = null; lastNewCel = null; memWarned = false;
   allocScratch();
   undoStack.length = 0; redoStack.length = 0;
 }
@@ -1051,10 +1129,10 @@ const fitScale = (w, h) => Math.min(1, 3200 / w, 3200 / h, Math.sqrt(6.6e6 / (w 
 
 /* ================= 履歴 ================= */
 const undoStack = [], redoStack = [], MAXH = 40;
-function snap(){ return { order: layers.slice(), props: layers.map(L => [L, L.name, L.visible, L.opacity, L.blend, L.lock, L.clip, new Map(L.cels)]), active, frames: anim.frames, fps: anim.fps }; }
+function snap(){ return { order: layers.slice(), props: layers.map(L => [L, L.name, L.visible, L.opacity, L.blend, L.lock, L.clip, new Map(L.cels), L.anim]), active, frames: anim.frames, fps: anim.fps }; }
 function restoreStruct(S){
   layers = S.order.slice();
-  for (const [L, n, v, o, b, k, c, cels] of S.props){ L.name = n; L.visible = v; L.opacity = o; L.blend = b; L.lock = k; L.clip = c; if (cels) L.cels = new Map(cels); }
+  for (const [L, n, v, o, b, k, c, cels, an] of S.props){ L.name = n; L.visible = v; L.opacity = o; L.blend = b; L.lock = k; L.clip = c; if (cels) L.cels = new Map(cels); if (an != null) L.anim = an; }
   active = S.active;
   if (S.frames){ anim.frames = S.frames; anim.fps = S.fps; if (anim.cur >= anim.frames) anim.cur = anim.frames - 1; }
   layers.forEach(updateThumb); syncAnimUI(); drawTimeline();
@@ -1364,7 +1442,7 @@ const diameterAt = (s, pr) => Math.max(.7, s.size * (1 - (s.pSize / 100) * (1 - 
 function beginStroke(tool, e, d){
   const L = active;
   if (!canPaint(L, tool === 'eraser')) return;
-  ensureCel(L);
+  ensureCel(L, tool === 'eraser');
   const s = settings[tool], proc = makeProc(s, tool);
   rawCtx.clearRect(0, 0, DW, DH);
   if (proc.active) dispCtx.clearRect(0, 0, DW, DH);
@@ -1590,7 +1668,7 @@ function snapAngle(a, b){
 }
 function commitFill(sh, line){
   const s = settings.fill, L = active;
-  ensureCel(L);
+  ensureCel(L, s.op === 'erase');
   const pad = s.feather + 2, b = shapeBounds(sh);
   const x = Math.max(0, Math.floor(b.x0 - pad)), y = Math.max(0, Math.floor(b.y0 - pad));
   const x2 = Math.min(DW, Math.ceil(b.x1 + pad)), y2 = Math.min(DH, Math.ceil(b.y1 + pad));
@@ -1752,7 +1830,7 @@ function commitLineBlend(A, B){
 function beginLiquify(e, d){
   const L = active;
   if (!canPaint(L, false)) return;
-  ensureCel(L);
+  ensureCel(L, true);
   beforeCtx.globalCompositeOperation = 'copy'; beforeCtx.drawImage(L.canvas, 0, 0); beforeCtx.globalCompositeOperation = 'source-over';
   op = { kind: 'liquify', L, s: settings.liquify, pointerId: e.pointerId, pointerType: e.pointerType, img: L.ctx.getImageData(0, 0, DW, DH), pos: d, last: d, rect: null, raf: 0 };
   if (op.s.mode !== 'push'){ const loop = () => { if (!op || op.kind !== 'liquify') return; liquifyStep(op.pos.x, op.pos.y, 0, 0); op.raf = requestAnimationFrame(loop); }; loop(); }
@@ -1861,7 +1939,8 @@ function drawXfHandles(ctx){
 }
 function xfStart(L, float, fx, fy, base){
   const orig = mk(DW, DH); orig.getContext('2d').drawImage(L.canvas, 0, 0);
-  xf = { L, ctx: L.ctx, float, w: float.width, h: float.height, cx: fx + float.width / 2, cy: fy + float.height / 2, sx: 1, sy: 1, rot: 0, flipX: false, flipY: false, base, orig, drag: null };
+  const nc = lastNewCel && lastNewCel.L === L ? lastNewCel : null; lastNewCel = null;
+  xf = { L, ctx: L.ctx, newCel: nc, float, w: float.width, h: float.height, cx: fx + float.width / 2, cy: fy + float.height / 2, sx: 1, sy: 1, rot: 0, flipX: false, flipY: false, base, orig, drag: null };
   xf.cx0 = xf.cx; xf.cy0 = xf.cy;
   renderToolPanel(); updateUndo(); requestRender(true);
 }
@@ -1879,8 +1958,9 @@ function layerBounds(L){
 function xfStartLayer(){
   const L = active;
   if (!L.visible){ toast('非表示のレイヤーは動かせません'); return false; }
+  ensureCel(L, true);
   const b = layerBounds(L);
-  if (!b){ toast('このレイヤーには動かせる絵がありません'); return false; }
+  if (!b){ dropNewCel(lastNewCel); lastNewCel = null; toast('このレイヤーには動かせる絵がありません'); return false; }
   const f = mk(b.w, b.h); f.getContext('2d').drawImage(L.canvas, -b.x, -b.y);
   xfStart(L, f, b.x, b.y, null);
   return true;
@@ -1888,9 +1968,10 @@ function xfStartLayer(){
 function xfStartLasso(pts){
   const L = active, sh = { type: 'free', pts }, bb = shapeBounds(sh);
   if (!L.visible){ toast('非表示のレイヤーは動かせません'); return; }
+  ensureCel(L, true);
   const x = Math.max(0, Math.floor(bb.x0)), y = Math.max(0, Math.floor(bb.y0));
   const w = Math.min(DW, Math.ceil(bb.x1)) - x, h = Math.min(DH, Math.ceil(bb.y1)) - y;
-  if (w < 2 || h < 2) return;
+  if (w < 2 || h < 2){ dropNewCel(lastNewCel); lastNewCel = null; return; }
   const f = mk(w, h), fc = f.getContext('2d', { willReadFrequently: true });
   fc.drawImage(L.canvas, -x, -y);
   fc.globalCompositeOperation = 'destination-in';
@@ -1898,7 +1979,7 @@ function xfStartLasso(pts){
   fc.setTransform(1, 0, 0, 1, 0, 0); fc.globalCompositeOperation = 'source-over';
   const d = fc.getImageData(0, 0, w, h).data;
   let any = false; for (let i = 3; i < d.length; i += 4) if (d[i]){ any = true; break; }
-  if (!any){ toast('囲んだ中に絵がありません'); return; }
+  if (!any){ dropNewCel(lastNewCel); lastNewCel = null; toast('囲んだ中に絵がありません'); return; }
   const base = mk(DW, DH), bc = base.getContext('2d');
   bc.drawImage(L.canvas, 0, 0);
   bc.globalCompositeOperation = 'destination-out'; bc.beginPath(); pathShape(bc, sh, p => p); bc.fill('nonzero');
@@ -1944,14 +2025,15 @@ function xfCommit(){
     if (X.base){ C.globalCompositeOperation = 'copy'; C.drawImage(X.base, 0, 0); C.globalCompositeOperation = 'source-over'; }
     else C.clearRect(0, 0, DW, DH);
     drawFloat(C, X);
-    pushHistory({ kind: 'px', L, ctx: C, f: anim.cur, cel: heldCel(L), x: 0, y: 0, before: bef, after: C.getImageData(0, 0, DW, DH) });
+    pushHistory({ kind: 'px', L, ctx: C, f: anim.cur, cel: heldCel(L), newCel: X.newCel, x: 0, y: 0, before: bef, after: C.getImageData(0, 0, DW, DH) });
     updateThumb(L);
-  }
+  } else dropNewCel(X.newCel);
   renderToolPanel(); updateUndo(); updateCursor(); requestRender(true);
 }
 function xfCancel(){
   if (!xf) return;
-  xf = null;
+  const X = xf; xf = null;
+  dropNewCel(X.newCel);
   if (op && op.kind === 'xfDrag') op = null;
   renderToolPanel(); updateUndo(); updateCursor(); requestRender(true);
 }
@@ -1982,6 +2064,7 @@ function cancelOp(){
     updateThumb(o.L);
   }
   if (o.kind === 'xfDrag' && xf && xf.drag){ const g = xf.drag; Object.assign(xf, { cx: g.cx, cy: g.cy, sx: g.sx, sy: g.sy, rot: g.rot }); xf.drag = null; }
+  if ((o.kind === 'stroke' || o.kind === 'liquify') && lastNewCel){ dropNewCel(lastNewCel); lastNewCel = null; }
   requestRender(true);
 }
 function interruptTouchOp(){
@@ -2194,6 +2277,7 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (e.key === 'Alt'){ altDown = true; updateCursor(); requestRender(); e.preventDefault(); return; }
+  if (e.key === 'Tab' && !e.shiftKey && (!document.activeElement || document.activeElement === document.body)){ e.preventDefault(); toggleUI(); return; }
   if (e.code === 'Space'){ e.preventDefault(); if (!spaceDown){ spaceDown = true; updateCursor(); requestRender(); } return; }
   if (e.key === '['){ adjSize(-1); return; }
   if (e.key === ']'){ adjSize(1); return; }
@@ -2788,6 +2872,7 @@ function renderLayers(){
   $('#lyOpacityOut').textContent = Math.round(active.opacity * 100) + '%';
   $('#lyLock').checked = active.lock;
   $('#lyClip').checked = active.clip;
+  $('#lyAnim').checked = active.anim;
   const idx = layers.indexOf(active);
   $('#lyClip').disabled = idx <= 0;
   $('#lyDel').disabled = layers.length <= 1;
@@ -2815,7 +2900,7 @@ $('#lyAdd').addEventListener('click', layerAct(() => structChange(() => { const 
 $('#lyDup').addEventListener('click', layerAct(() => structChange(() => {
   const A = active, L = makeLayer(A.name + ' のコピー', true);
   for (const [k, c] of A.cels){ const n = newCel(); n.ctx.drawImage(c.canvas, 0, 0); L.cels.set(k, n); }
-  Object.assign(L, { visible: A.visible, opacity: A.opacity, blend: A.blend, lock: A.lock, clip: A.clip });
+  Object.assign(L, { visible: A.visible, opacity: A.opacity, blend: A.blend, lock: A.lock, clip: A.clip, anim: A.anim });
   updateThumb(L); layers.splice(layers.indexOf(A) + 1, 0, L); active = L;
 })));
 $('#lyDel').addEventListener('click', layerAct(() => {
@@ -2871,6 +2956,7 @@ $('#lyOpacity').addEventListener('change', () => {
   pushHistory({ kind: 'struct', before: propBefore, after: snap() }); propBefore = null; renderLayers();
 });
 $('#lyLock').addEventListener('change', e => { const v = e.target.checked; structChange(() => { active.lock = v; }); });
+$('#lyAnim').addEventListener('change', e => { const v = e.target.checked; structChange(() => { active.anim = v; }); });
 $('#lyClip').addEventListener('change', e => { const v = e.target.checked; settle(); structChange(() => { active.clip = v; }); });
 
 /* ================= ファイル（KAKOI・PSD・ZIP・画像） ================= */
@@ -3247,7 +3333,7 @@ async function openPsdViaLibrary(u8, name){
 // --- KAKOI 形式（このアプリ専用。レイヤーを PNG のまま ZIP にまとめたもの） ---
 async function buildKakoi(){
   compose(); qCompose = false;
-  const files = [], meta = { format: 'kakoi', version: 2, width: DW, height: DH, name: docName, active: layers.indexOf(active), colors: { main: toHex(color), sub: toHex(sub) }, anim: { frames: anim.frames, fps: anim.fps, loop: anim.loop }, layers: [] };
+  const files = [], meta = { format: 'kakoi', version: 2, width: DW, height: DH, name: docName, active: layers.indexOf(active), colors: { main: toHex(color), sub: toHex(sub) }, anim: animMeta(), layers: [] };
   for (let i = 0; i < layers.length; i++){
     const L = layers[i], cels = [];
     for (const k of sortedKeys(L)){
@@ -3256,7 +3342,7 @@ async function buildKakoi(){
       cels.push({ frame: k, file: path });
     }
     const first = cels.find(c => c.frame === 0) || cels[0];
-    meta.layers.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, file: first ? first.file : null, cels });
+    meta.layers.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, anim: L.anim, file: first ? first.file : null, cels });
   }
   files.push({ name: 'preview.png', data: await blobBytes(await canvasBlob(comp)), store: true });
   files.unshift({ name: 'kakoi.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 1)) });
@@ -3276,10 +3362,11 @@ async function openKakoiEntries(ents, name){
     celLists.push(out);
   }
   resetDoc(W, H);
-  if (meta.anim){ anim.frames = clamp(meta.anim.frames | 0 || 24, 1, 1200); anim.fps = clamp(+meta.anim.fps || 12, 1, 120); if (typeof meta.anim.loop === 'boolean') anim.loop = meta.anim.loop; }
+  readAnimMeta(meta.anim);
   const ls = meta.layers.map((info, i) => {
     const L = makeLayer(String(info.name || `レイヤー ${i + 1}`), true);
     Object.assign(L, { visible: info.visible !== false, opacity: info.opacity == null ? 1 : clamp(+info.opacity, 0, 1), blend: BLEND_NAME[info.blend] ? info.blend : 'source-over', lock: !!info.lock, clip: !!info.clip && i > 0 });
+    if (typeof info.anim === 'boolean') L.anim = info.anim;
     for (const c of celLists[i]){ const cel = newCel(); cel.ctx.drawImage(c.bmp, 0, 0); L.cels.set(c.frame, cel); }
     return L;
   });
@@ -3395,7 +3482,7 @@ function syncSeqDialog(){
 function openSeqDialog(){
   if (busy()) return;
   stopPlay(); settle();
-  $('#seqFrom').value = 1; $('#seqTo').value = anim.frames; $('#seqFrom').max = $('#seqTo').max = anim.frames;
+  const PR = playRange(); $('#seqFrom').value = PR.a + 1; $('#seqTo').value = PR.b + 1; $('#seqFrom').max = $('#seqTo').max = anim.frames;
   $('#seqFps').textContent = `${anim.fps} fps`;
   syncSeqDialog();
   $('#seqModal').classList.add('open'); $('#seqOk').focus();
@@ -3534,7 +3621,7 @@ async function openImageDoc(blob, name){
   const img = await loadImage(blob);
   const k = fitScale(img.width, img.height), W = Math.max(1, Math.round(img.width * k)), H = Math.max(1, Math.round(img.height * k));
   resetDoc(W, H);
-  const B = makeLayer(name.slice(0, 24) || '画像');
+  const B = makeLayer(name.slice(0, 24) || '画像'); B.anim = false;
   B.ctx.imageSmoothingQuality = 'high'; B.ctx.drawImage(img, 0, 0, W, H);
   finishDoc([B, makeLayer()], name);
   toast(`「${name}」を開きました` + (k < 1 ? `（大きいため ${Math.round(k * 100)}% に縮小）` : ''));
@@ -3598,9 +3685,9 @@ async function doSave(){
     for (const L of layers){
       const cels = [];
       for (const k of sortedKeys(L)){ const c = L.cels.get(k); await celBytes(c); bufs.push(c.buf); cels.push({ frame: k, idx: bufs.length - 1 }); }
-      lm.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, cels });
+      lm.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, anim: L.anim, cels });
     }
-    const meta = { v: 3, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, anim: { frames: anim.frames, fps: anim.fps, loop: anim.loop }, layers: lm };
+    const meta = { v: 3, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, anim: animMeta(), layers: lm };
     try { await IDB.put('current', { meta, bufs, handle: fileHandle }); }
     catch (e){ await IDB.put('current', { meta, bufs }); }
     setStatus('この端末に自動保存済み');
@@ -3615,10 +3702,11 @@ async function restore(){
     resetDoc(m.w, m.h);
     const ls = [];
     void 0;
-    if (m.anim){ anim.frames = clamp(m.anim.frames | 0 || 24, 1, 1200); anim.fps = clamp(+m.anim.fps || 12, 1, 120); }
+    readAnimMeta(m.anim);
     for (let i = 0; i < m.layers.length; i++){
       const info = m.layers[i], L = makeLayer(info.name, true);
       Object.assign(L, { visible: !!info.visible, opacity: +info.opacity, blend: info.blend || 'source-over', lock: !!info.lock, clip: !!info.clip });
+      if (typeof info.anim === 'boolean') L.anim = info.anim;
       const list = Array.isArray(info.cels) ? info.cels : [{ frame: 0, idx: i }];
       for (const c of list){
         const buf = rec.bufs[c.idx]; if (!buf) continue;
@@ -3770,20 +3858,27 @@ function stepKey(dir){
   const k = dir > 0 ? ks.find(x => x > anim.cur) : [...ks].reverse().find(x => x < (hk >= 0 && hk < anim.cur ? hk : anim.cur));
   if (k != null && k < anim.frames) setFrame(k);
 }
-let playRaf = 0, playLast = 0;
+let playRaf = 0, playLast = 0, playDir = 1;
 function play(){
   if (anim.playing){ stopPlay(); return; }
   if (busy()) return;
   settle();
-  if (anim.frames < 2){ toast('コマが1つしかありません。「長さ」を増やしてください'); return; }
-  anim.playing = true; playLast = performance.now();
+  let R = playRange();
+  if (R.a === R.b){ toast('再生する範囲が1コマだけです。「範囲」か「長さ」を広げてください'); return; }
+  if (anim.cur < R.a || anim.cur >= R.b) anim.cur = R.a;
+  anim.playing = true; playLast = performance.now(); playDir = 1;
   const tick = now => {
     if (!anim.playing) return;
     const step = 1000 / anim.fps;
     if (now - playLast >= step){
       playLast += step; if (now - playLast > step * 3) playLast = now;
-      let n = anim.cur + 1;
-      if (n >= anim.frames){ if (anim.loop) n = 0; else { stopPlay(); return; } }
+      R = playRange();
+      let n = anim.cur + playDir;
+      if (n > R.b){
+        if (anim.loopMode === 'loop') n = R.a;
+        else if (anim.loopMode === 'pingpong'){ playDir = -1; n = Math.max(R.a, anim.cur - 1); }
+        else { stopPlay(); return; }
+      } else if (n < R.a){ playDir = 1; n = Math.min(R.b, R.a + 1); }
       anim.cur = n; requestRender(true); tlFollow(); drawTimeline(); syncFrameLabel();
     }
     playRaf = requestAnimationFrame(tick);
@@ -3838,7 +3933,11 @@ function syncAnimUI(){
   if (![...fpsSel.options].some(o => +o.value === anim.fps)){ const o = el('option', null, String(anim.fps)); o.value = anim.fps; fpsSel.append(o); }
   fpsSel.value = String(anim.fps);
   const len = $('#tlLen'); if (document.activeElement !== len) len.value = anim.frames;
-  $('#tlLoop').setAttribute('aria-pressed', String(anim.loop));
+  $('#tlLoopMode').value = anim.loopMode;
+  const R = playRange(), tin = $('#tlIn'), tout = $('#tlOut');
+  tin.max = tout.max = anim.frames;
+  if (document.activeElement !== tin) tin.value = R.a + 1;
+  if (document.activeElement !== tout) tout.value = R.b + 1;
   $('#tlPlay').innerHTML = anim.playing ? ICON_PAUSE : ICON_PLAY;
   $('#tlPlay').title = anim.playing ? '停止（Enter）' : '再生（Enter）';
   $('#tlOnionBtn').setAttribute('aria-pressed', String(anim.onion.on));
@@ -3871,6 +3970,7 @@ function drawTimeline(){
   c.fillStyle = K.field; c.fillRect(0, 0, vw, vh);
   for (let f = f0; f < f1; f++) if (Math.floor(f / anim.fps) % 2 === 1){ c.fillStyle = K.p2; c.fillRect(X(f), G.rulerH, G.cw, vh); }
   c.fillStyle = K.line; c.fillRect(X(anim.frames), G.rulerH, 1, vh);
+  const PR = playRange();
   for (let i = 0; i < layers.length; i++){
     const L = layers[layers.length - 1 - i], y = G.rulerH + i * G.rh - sy;
     if (y > vh || y + G.rh < G.rulerH) continue;
@@ -3902,7 +4002,15 @@ function drawTimeline(){
     c.fillStyle = K.ink3; c.fillRect(x, big ? 11 : 15, 1, big ? 8 : 4);
     if (big){ c.fillStyle = K.ink2; c.fillText(String(f + 1), x + 3, 7); }
   }
-  c.fillStyle = K.acc; rr(c, px + 1, 1, G.cw - 2, G.rulerH - 4, 3); c.fill();
+  if (PR.a > 0 || PR.b < anim.frames - 1){
+    c.fillStyle = K.panel; c.globalAlpha = .6;
+    if (PR.a > 0) c.fillRect(X(0), G.rulerH, PR.a * G.cw, vh);
+    if (PR.b < anim.frames - 1) c.fillRect(X(PR.b + 1), G.rulerH, (anim.frames - PR.b - 1) * G.cw, vh);
+    c.globalAlpha = 1;
+  }
+  c.fillStyle = K.soft; c.fillRect(X(PR.a), G.rulerH - 5, (PR.b - PR.a + 1) * G.cw, 4);
+  c.fillStyle = K.acc; c.fillRect(X(PR.a), G.rulerH - 5, 2, 4); c.fillRect(X(PR.b + 1) - 2, G.rulerH - 5, 2, 4);
+  c.fillStyle = K.acc; rr(c, px + 1, 1, G.cw - 2, G.rulerH - 6, 3); c.fill();
   c.fillStyle = K.panel; c.fillRect(0, 0, G.nameW, vh);
   c.fillStyle = K.line; c.fillRect(G.nameW - 1, 0, 1, vh);
   c.fillStyle = K.ink3; c.font = '10px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
@@ -3913,7 +4021,8 @@ function drawTimeline(){
     if (y > vh || y + G.rh < G.rulerH) continue;
     if (L === active){ c.fillStyle = K.soft; c.fillRect(0, y, G.nameW - 1, G.rh); c.fillStyle = K.acc; c.fillRect(0, y, 3, G.rh); }
     c.fillStyle = L.visible ? K.ink : K.ink3;
-    c.fillText(fitText(c, (L.clip ? '↳ ' : '') + L.name, G.nameW - 16), 10, y + G.rh / 2);
+    c.fillText(fitText(c, (L.clip ? '↳ ' : '') + L.name, G.nameW - (L.anim ? 16 : 40)), 10, y + G.rh / 2);
+    if (!L.anim){ c.fillStyle = K.ink3; c.font = '10px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif'; c.textAlign = 'right'; c.fillText('固定', G.nameW - 8, y + G.rh / 2); c.textAlign = 'left'; c.font = '11.5px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif'; }
     c.fillStyle = K.line; c.fillRect(0, y + G.rh - 1, G.nameW, 1);
   }
   c.fillStyle = K.panel; c.fillRect(0, 0, G.nameW - 1, G.rulerH - 1);
@@ -3948,7 +4057,11 @@ $('#tlPrev').addEventListener('click', () => { stopPlay(); setFrame(anim.cur - 1
 $('#tlPlay').addEventListener('click', play);
 $('#tlNext').addEventListener('click', () => { stopPlay(); setFrame(anim.cur + 1); });
 $('#tlLast').addEventListener('click', () => { stopPlay(); setFrame(anim.frames - 1); });
-$('#tlLoop').addEventListener('click', () => { anim.loop = !anim.loop; saveAnimPrefs(); syncAnimUI(); });
+$('#tlLoopMode').addEventListener('change', e => { anim.loopMode = e.target.value; saveAnimPrefs(); });
+function setPlayRange(a, b){ anim.rangeIn = a; anim.rangeOut = b; fileDirty = true; scheduleSave(); syncAnimUI(); drawTimeline(); }
+$('#tlIn').addEventListener('change', e => { const R = playRange(); const a = clamp((Math.round(+e.target.value) || 1) - 1, 0, anim.frames - 1); setPlayRange(a, Math.max(a, R.b)); });
+$('#tlOut').addEventListener('change', e => { const R = playRange(); const b = clamp((Math.round(+e.target.value) || anim.frames) - 1, 0, anim.frames - 1); setPlayRange(Math.min(R.a, b), b); });
+$('#tlRangeAll').addEventListener('click', () => setPlayRange(0, null));
 $('#tlFps').addEventListener('change', e => { const v = clamp(+e.target.value || 12, 1, 120); structChange(() => { anim.fps = v; }); syncAnimUI(); drawTimeline(); });
 $('#tlLen').addEventListener('change', e => {
   const n = clamp(Math.round(+e.target.value) || 1, 1, 1200);
@@ -3989,6 +4102,140 @@ function drawOnion(ctx){
   ctx.globalAlpha = 1;
 }
 
+/* ================= ウィンドウ（パネルを切り離して好きな場所へ） ================= */
+const floatLayer = $('#floatLayer'), mainEl = $('.main'), panelEl = $('#panel');
+const WINS = {
+  color: { el: $('#colorSec'), order: 0 },
+  tool: { el: $('#toolSec'), order: 1 },
+  layers: { el: $('#layerSec'), order: 2 },
+  rail: { el: $('.rail') },
+};
+const SEC_KEYS = ['color', 'tool', 'layers'];
+const ICON_FLOAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="m20 4-8 8"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+const ICON_DOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M15 4v16"/></svg>';
+const ICON_FOLD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>';
+const ICON_UNFOLD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+let layout = (() => { try { return JSON.parse(localStorage.getItem('kakoi.layout') || '{}') || {}; } catch (e){ return {}; } })();
+let zTop = 1, layoutTimer = 0;
+function saveLayout(){ clearTimeout(layoutTimer); layoutTimer = setTimeout(() => { try { localStorage.setItem('kakoi.layout', JSON.stringify(layout)); } catch (e) {} }, 250); }
+const winState = k => (layout[k] = layout[k] || {});
+function bringFront(el){ el.style.zIndex = String(++zTop); }
+function clampWin(el){
+  const w = el.offsetWidth || 300, x = parseFloat(el.style.left) || 0, y = parseFloat(el.style.top) || 0;
+  el.style.left = clamp(x, 60 - w, innerWidth - 60) + 'px';
+  el.style.top = clamp(y, 0, innerHeight - 40) + 'px';
+}
+function applyWin(key){
+  const W = WINS[key], el = W.el, st = winState(key);
+  el.classList.toggle('hidden-win', !!st.hidden);
+  if (key !== 'rail') el.classList.toggle('collapsed', !!st.collapsed);
+  if (st.float){
+    if (el.parentElement !== floatLayer) floatLayer.append(el);
+    el.classList.add('floating');
+    el.style.left = (st.x ?? 80) + 'px'; el.style.top = (st.y ?? 80) + 'px';
+    el.style.width = st.w ? st.w + 'px' : ''; el.style.height = st.h ? st.h + 'px' : '';
+    clampWin(el);
+  } else {
+    el.classList.remove('floating');
+    el.style.left = el.style.top = el.style.width = el.style.height = el.style.zIndex = '';
+    if (key === 'rail'){ if (el.parentElement !== mainEl) mainEl.prepend(el); }
+    else {
+      const next = SEC_KEYS.slice(W.order + 1).map(k => WINS[k].el).find(e => e.parentElement === panelEl);
+      panelEl.insertBefore(el, next || null);
+    }
+  }
+  const fb = el.querySelector('[data-wact="float"]'), cb = el.querySelector('[data-wact="fold"]');
+  if (fb){ fb.innerHTML = st.float ? ICON_DOCK : ICON_FLOAT; fb.title = st.float ? 'パネルに戻す' : 'ウィンドウとして切り離す'; fb.setAttribute('aria-label', fb.title); }
+  if (cb){ cb.innerHTML = st.collapsed ? ICON_UNFOLD : ICON_FOLD; cb.title = st.collapsed ? '広げる' : 'たたむ'; cb.setAttribute('aria-label', cb.title); }
+}
+function updateDockState(){
+  const anyDocked = SEC_KEYS.some(k => WINS[k].el.parentElement === panelEl && !WINS[k].el.classList.contains('hidden-win'));
+  mainEl.classList.toggle('no-panel', !anyDocked);
+  const railDocked = WINS.rail.el.parentElement === mainEl && !WINS.rail.el.classList.contains('hidden-win');
+  mainEl.classList.toggle('no-rail', !railDocked);
+  $('#timeline').classList.toggle('hidden-win', !!layout.timelineHidden);
+  $('#btnPanel').classList.toggle('gone', !anyDocked);
+  for (const i of $('#winMenu').querySelectorAll('input[data-win]')){ const k = i.dataset.win; i.checked = k === 'timeline' ? !layout.timelineHidden : !winState(k).hidden; }
+  requestAnimationFrame(() => { resizeView(); sizePicker(); drawTimeline(); });
+}
+function applyAllWins(){ for (const k of Object.keys(WINS)) applyWin(k); updateDockState(); }
+function floatWin(key, x, y){
+  const st = winState(key), el = WINS[key].el;
+  if (x == null){ const r = el.getBoundingClientRect(); x = key === 'rail' ? r.left + 12 : r.left - (r.width || 300) - 16; y = r.top; }
+  Object.assign(st, { float: true, x: Math.round(x), y: Math.round(y), hidden: false });
+  applyWin(key); bringFront(el); updateDockState(); saveLayout();
+}
+function dockWin(key){ Object.assign(winState(key), { float: false }); applyWin(key); updateDockState(); saveLayout(); }
+function bindWinDrag(key, handle){
+  handle.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (e.target.closest('button, select, input, kbd, .pm-seg, .popwrap')) return;
+    const el = WINS[key].el, st = winState(key), r = el.getBoundingClientRect();
+    const ox = e.clientX - r.left, oy = e.clientY - r.top, sx = e.clientX, sy = e.clientY;
+    let moving = !!st.float;
+    if (moving) bringFront(el);
+    e.preventDefault();
+    const pid = e.pointerId;
+    const mv = ev => {
+      if (ev.pointerId !== pid) return;
+      if (!moving){
+        if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 12) return;
+        moving = true; st.float = true; st.hidden = false; applyWin(key); updateDockState(); bringFront(el);
+      }
+      el.style.left = (ev.clientX - ox) + 'px'; el.style.top = (ev.clientY - oy) + 'px'; clampWin(el);
+    };
+    const up = ev => {
+      if (ev.pointerId !== pid) return;
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      if (moving && st.float){ st.x = parseFloat(el.style.left); st.y = parseFloat(el.style.top); saveLayout(); }
+    };
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+}
+for (const k of SEC_KEYS){
+  const el = WINS[k].el, h2 = el.querySelector('h2');
+  bindWinDrag(k, h2);
+  el.querySelector('[data-wact="float"]').addEventListener('click', () => winState(k).float ? dockWin(k) : floatWin(k));
+  el.querySelector('[data-wact="fold"]').addEventListener('click', () => { const st = winState(k); st.collapsed = !st.collapsed; applyWin(k); saveLayout(); requestAnimationFrame(() => { sizePicker(); }); });
+  el.addEventListener('pointerdown', () => { if (winState(k).float) bringFront(el); }, true);
+  new ResizeObserver(() => {
+    const st = winState(k);
+    if (!st.float) return;
+    const w = parseFloat(el.style.width), h = parseFloat(el.style.height);
+    if (w && w !== st.w){ st.w = Math.round(w); saveLayout(); }
+    if (h && h !== st.h){ st.h = Math.round(h); saveLayout(); }
+  }).observe(el);
+}
+bindWinDrag('rail', $('#railGrip'));
+$('#railGrip').addEventListener('dblclick', () => winState('rail').float ? dockWin('rail') : floatWin('rail'));
+WINS.rail.el.addEventListener('pointerdown', () => { if (winState('rail').float) bringFront(WINS.rail.el); }, true);
+for (const i of $('#winMenu').querySelectorAll('input[data-win]')){
+  i.addEventListener('change', () => {
+    const k = i.dataset.win;
+    if (k === 'timeline') layout.timelineHidden = !i.checked; else { winState(k).hidden = !i.checked; applyWin(k); }
+    updateDockState(); saveLayout();
+  });
+}
+const WIN_ACTS = {
+  floatAll(){
+    const x0 = innerWidth - 330;
+    if (!winState('rail').float) floatWin('rail', 12, 60);
+    SEC_KEYS.forEach((k, i) => { if (!winState(k).float) floatWin(k, x0 - i * 28, 60 + i * 36); });
+  },
+  reset(){ layout = {}; uiHidden = false; $('#app').classList.remove('ui-hidden'); applyAllWins(); saveLayout(); toast('ウィンドウの配置を元に戻しました'); },
+  hideUI(){ toggleUI(); },
+};
+for (const b of $('#winMenu').querySelectorAll('button[data-act]')) b.addEventListener('click', () => { closePops(); WIN_ACTS[b.dataset.act](); });
+let uiHidden = false;
+function toggleUI(){
+  uiHidden = !uiHidden;
+  $('#app').classList.toggle('ui-hidden', uiHidden);
+  requestAnimationFrame(() => { resizeView(); drawTimeline(); });
+  if (uiHidden) toast('Tab でパネルを戻します');
+}
+window.addEventListener('resize', () => { for (const k of Object.keys(WINS)) if (winState(k).float) clampWin(WINS[k].el); });
+bindPop('#btnWin', '#winMenu');
+
 /* ================= 起動 ================= */
 async function init(){
   readTheme();
@@ -4005,6 +4252,7 @@ async function init(){
   setPickMode(pickMode);
   $('#timeline').classList.toggle('open', tlOpen); $('#tlToggle').setAttribute('aria-expanded', String(tlOpen));
   updateRotLabel();
+  applyAllWins();
   setTool('fill');
   updateUndo();
   const ok = await restore();
@@ -4039,6 +4287,14 @@ init();
     deferred = null; btn.hidden = true;
   });
   window.addEventListener('appinstalled', () => { btn.hidden = true; });
+  // 最新版に更新：キャッシュを飛ばして読み込み直す（自動保存した絵やスウォッチは消えません）
+  const up = document.getElementById('btnUpdate');
+  if (up) up.addEventListener('click', async () => {
+    up.disabled = true; up.textContent = '確認しています…';
+    try { const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (reg) await reg.update(); } catch (e) {}
+    try { await fetch('./', { cache: 'reload' }); await fetch('./index.html', { cache: 'reload' }); } catch (e) {}
+    location.reload();
+  });
 })();
 </script>
 </body>
