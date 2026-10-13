@@ -1,7 +1,7 @@
 /* KAKOI のオフライン用の仕組み（Service Worker）
    アイコンやこのファイルを差し替えたときは、VERSION の数字を上げてください。
    index.html だけを差し替えた場合は、ネットにつながっていれば自動で新しい版になります。 */
-const VERSION = 'kakoi-pwa-1';
+const VERSION = 'kakoi-pwa-2';
 const SHELL = [
   './',
   './index.html',
@@ -47,14 +47,16 @@ self.addEventListener('fetch', event => {
 });
 
 // アプリ本体：ネットにつながっていれば最新版、つながらなければ保存してある版
+// （ブラウザのキャッシュに古い版が残っていても、毎回サーバーに新しい版がないか確かめる）
 async function pageFirstFromNetwork(req){
   const cache = await caches.open(VERSION);
   try {
-    const res = await Promise.race([
-      fetch(req),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000)),
+    let res = await Promise.race([
+      fetch(new Request(req.url, { cache: 'no-cache', credentials: 'same-origin' })),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
     ]);
-    if (res && res.ok) await cache.put('./index.html', res.clone());
+    if (res.redirected) res = await fetch(req);
+    else if (res.ok) await cache.put('./index.html', res.clone());
     return res;
   } catch (e) {
     return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
