@@ -124,7 +124,34 @@ button{touch-action:manipulation}
 .rail .grow{flex:1}
 .chip{width:30px;height:30px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);cursor:pointer;flex:none;margin-bottom:4px}
 
-#stage{position:relative;overflow:hidden;background:var(--workspace);touch-action:none}
+.center{display:flex;flex-direction:column;min-width:0;min-height:0}
+#stage{position:relative;overflow:hidden;background:var(--workspace);touch-action:none;flex:1;min-height:0}
+.timeline{flex:none;display:flex;flex-direction:column;background:var(--panel);border-top:1px solid var(--line)}
+.tl-bar{display:flex;align-items:center;gap:6px;padding:4px 8px;min-height:40px;overflow-x:auto;overflow-y:visible;scrollbar-width:thin}
+.timeline.open .tl-bar{overflow-x:auto}
+.tl-toggle{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border:0;border-radius:7px;background:transparent;cursor:pointer;font-weight:600;white-space:nowrap;flex:none}
+.tl-toggle:hover{background:var(--panel-2)}
+.tl-toggle svg{width:18px;height:18px}
+.tl-toggle[aria-expanded="true"]{color:var(--accent)}
+.tl-ctrls{display:flex;align-items:center;gap:6px;flex:none}
+.timeline:not(.open) .tl-ctrls,.timeline:not(.open) .tl-body{display:none}
+.tlb{height:28px;min-width:28px;padding:0 7px;border:1px solid var(--line);background:var(--field);border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:11.5px;flex:none;white-space:nowrap}
+.tlb svg{width:16px;height:16px}
+.tlb.play{min-width:40px}
+.tlb[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.tl-frame{display:inline-flex;flex-direction:column;align-items:center;line-height:1.15;min-width:70px;flex:none;font-variant-numeric:tabular-nums}
+.tl-frame b{font-size:12px;font-weight:600}
+.tl-frame small{font-size:10px;color:var(--ink-3)}
+.tl-field{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:var(--ink-2);flex:none;white-space:nowrap}
+.tl-field select{height:26px;width:auto;font-size:11.5px}
+.tl-field input{height:26px;width:62px;font-size:11.5px}
+.tl-sep{width:1px;height:20px;background:var(--line);flex:none;margin:0 2px}
+.tl-mem{font-size:10.5px;color:var(--ink-3);flex:none;white-space:nowrap;margin-left:4px}
+.tl-body{position:relative;overflow:auto;height:136px;border-top:1px solid var(--line);overscroll-behavior:contain}
+#tlCanvas{position:sticky;top:0;left:0;display:block}
+#tlSpacer{position:absolute;top:0;left:0;pointer-events:none}
+.pop.up{top:auto;bottom:calc(100% + 6px)}
+.pop.fixed{position:fixed;transform:none;bottom:auto}
 #view{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
 .stagebar{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:12px;white-space:nowrap;max-width:calc(100% - 24px);overflow-x:auto}
 .stagebar[hidden]{display:none}
@@ -167,13 +194,41 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 .knob{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.3);pointer-events:none}
 .hue{position:relative;height:16px;margin-top:10px;border-radius:8px;overflow:hidden;touch-action:none;cursor:ew-resize}
 .hue .knob{top:50%;width:8px;height:20px;margin:-10px 0 0 -4px;border-radius:4px}
+.pm-seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;background:var(--field)}
+.pm-seg button{border:0;border-right:1px solid var(--line);background:transparent;font-size:11px;font-weight:400;padding:3px 8px;cursor:pointer;white-space:nowrap}
+.pm-seg button:last-child{border-right:0}
+.pm-seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.pm[hidden]{display:none}
+.wheel{position:relative;width:min(100%,236px);aspect-ratio:1;margin:0 auto;touch-action:none;cursor:crosshair}
+.wheel canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hlwrap{display:grid;grid-template-columns:minmax(0,1fr) 20px;gap:8px;height:156px}
+.hlfield,.hlsat{position:relative;border-radius:7px;overflow:hidden;touch-action:none;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.hlsat{cursor:ns-resize}
+.hlfield canvas,.hlsat canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.knob.big{width:24px;height:24px;margin:-12px 0 0 -12px}
+.knob.bar{left:50%;width:24px;height:8px;margin:-4px 0 0 -12px;border-radius:3px}
+.minihead{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.minihead .mini{height:24px}
+.sw-head{gap:6px}
+.sw-head>span{flex:none}
+.sw-sel{flex:1;height:26px;font-size:11.5px;font-weight:400;min-width:0}
+.sw-btn{width:28px;padding:0;font-size:14px;font-weight:600}
+.sw-head .popwrap{flex:none}
+#palMenu{min-width:250px;max-width:calc(100vw - 16px);font-weight:400}
+.swatches{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px;margin-top:6px}
+.swatches button{aspect-ratio:1;border-radius:4px;border:1px solid var(--line);padding:0;cursor:pointer;min-width:0}
+.swatches .empty{grid-column:1/-1;font-size:11px;color:var(--ink-3)}
+.row2{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:8px;margin:8px 0;font-size:12px;color:var(--ink-2)}
+.row2 .seg{margin:0}
+.inl{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.inl input{width:76px}
 .color-row{display:flex;align-items:center;gap:8px;margin-top:10px}
 .cur{width:40px;height:29px;border-radius:6px;border:1px solid var(--line);flex:none}
 .sub-sw{width:28px;height:29px;border-radius:6px;border:1px solid var(--line);padding:0;cursor:pointer;flex:none}
 .swap{width:28px;height:29px;border:1px solid var(--line);background:var(--field);border-radius:6px;display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
 .swap svg{width:15px;height:15px}
 .hex{flex:1;min-width:0;font-variant-numeric:tabular-nums;-webkit-user-select:text;user-select:text}
-.recent{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;min-height:22px;align-items:center}
+.recent{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;min-height:22px;align-items:center}
 .recent button{width:22px;height:22px;border-radius:5px;border:1px solid var(--line);padding:0;cursor:pointer}
 .recent .empty{font-size:11px;color:var(--ink-3)}
 
@@ -267,6 +322,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     <nav class="rail" aria-label="ツール">
       <button class="tool" data-tool="fill" title="囲い塗り (L)" aria-label="囲い塗り"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10 11 4l8.5 4.5-2.2 9-9.8 2.7z" fill="currentColor" fill-opacity=".28"/><path d="M4.5 10 11 4l8.5 4.5-2.2 9-9.8 2.7z"/></svg></button>
       <button class="tool" data-tool="brush" title="ブラシ (B)" aria-label="ブラシ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18.6 3.6c.9.9.9 2.1 0 3L11.2 14 9.9 12.7l7.3-8.9c.4-.4 1-.5 1.4-.2z"/><path d="M9.6 13.6c-2.1 0-3.6 1.4-3.6 3.3 0 1.4-.7 2.3-2 2.8 3.7 1 7.4-.4 7.4-3.9z"/></svg></button>
+      <button class="tool" data-tool="lineblend" title="ラインブレンド (J)" aria-label="ラインブレンド"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 17.5 17.5 6.5"/><circle cx="5" cy="19" r="2.4" fill="currentColor"/><circle cx="19" cy="5" r="2.4"/></svg></button>
       <button class="tool" data-tool="eraser" title="消しゴム (E)" aria-label="消しゴム"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.6 14.4 13.4 5.6a2 2 0 0 1 2.8 0l3.2 3.2a2 2 0 0 1 0 2.8L12 19H8.2z"/><path d="m9 10 5 5"/><path d="M12 19h8"/></svg></button>
       <button class="tool" data-tool="liquify" title="ゆがみ (W)" aria-label="ゆがみ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5c2.5-3 5.5-3 8 0s5.5 3 8 0"/><path d="M4 15.5c2.5-3 5.5-3 8 0s5.5 3 8 0"/></svg></button>
       <button class="tool" data-tool="transform" title="移動・変形 (V)" aria-label="移動・変形"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/><path d="m9 6 3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></svg></button>
@@ -279,23 +335,86 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <button class="chip" id="railColor" title="現在の色" aria-label="色を選ぶ"></button>
     </nav>
 
+    <div class="center">
     <div id="stage">
       <canvas id="view"></canvas>
       <div class="stagebar" id="stageBar" hidden></div>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
+    <section class="timeline" id="timeline" aria-label="タイムライン">
+      <div class="tl-bar">
+        <button class="tl-toggle" id="tlToggle" aria-expanded="false" title="アニメーションのタイムラインを開く・閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7.5 5v14M16.5 5v14M3 9.5h4.5M3 14.5h4.5M16.5 9.5H21M16.5 14.5H21"/></svg><span>アニメーション</span></button>
+        <div class="tl-ctrls">
+          <button class="tlb" id="tlFirst" title="最初のコマ" aria-label="最初のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5v14"/><path d="m18 6-8 6 8 6z"/></svg></button>
+          <button class="tlb" id="tlPrev" title="前のコマ（←）" aria-label="前のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+          <button class="tlb play" id="tlPlay" title="再生（Enter）" aria-label="再生・停止"></button>
+          <button class="tlb" id="tlNext" title="次のコマ（→）" aria-label="次のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+          <button class="tlb" id="tlLast" title="最後のコマ" aria-label="最後のコマ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 5v14"/><path d="m6 6 8 6-8 6z"/></svg></button>
+          <span class="tl-frame"><b id="tlFrame">1 / 24</b><small id="tlTime">0.00秒</small></span>
+          <button class="tlb" id="tlLoop" title="くり返し再生" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l3 3-3 3"/><path d="M4 11V9a3 3 0 0 1 3-3h13"/><path d="M7 21l-3-3 3-3"/><path d="M20 13v2a3 3 0 0 1-3 3H4"/></svg></button>
+          <label class="tl-field">fps <select id="tlFps"><option>8</option><option>10</option><option>12</option><option>15</option><option>24</option><option>25</option><option>30</option><option>60</option></select></label>
+          <label class="tl-field">長さ <input class="field" type="number" id="tlLen" min="1" max="1200"> コマ</label>
+          <span class="tl-sep"></span>
+          <button class="mini" id="tlNew" title="このコマに白紙の絵を作る（N）">新しいコマ</button>
+          <button class="mini" id="tlDup" title="直前の絵を複製してこのコマに置く（Shift+N）">複製</button>
+          <button class="mini" id="tlDel" title="このコマの絵を消す">削除</button>
+          <button class="mini" id="tlLonger" title="この絵を1コマ長く（後ろをずらす）">＋1コマ</button>
+          <button class="mini" id="tlShorter" title="この絵を1コマ短く">−1コマ</button>
+          <span class="tl-sep"></span>
+          <div class="popwrap"><button class="tlb" id="tlOnionBtn" title="オニオンスキン（O）" aria-haspopup="dialog" aria-pressed="false">オニオン</button>
+            <div class="pop rotpop fixed" id="onionMenu" hidden>
+              <label class="check"><input type="checkbox" id="onOn"><span>オニオンスキンを表示（O）</span></label>
+              <label class="ctl"><span>前の絵</span><input type="range" id="onPrev" min="0" max="5"><output></output></label>
+              <label class="ctl"><span>後の絵</span><input type="range" id="onNext" min="0" max="5"><output></output></label>
+              <label class="ctl"><span>濃さ</span><input type="range" id="onOp" min="5" max="80"><output></output></label>
+              <label class="check"><input type="checkbox" id="onTint"><span>色をつける（前＝赤・後＝緑）</span></label>
+              <p class="note">選んでいるレイヤーの、前後の絵を薄く重ねて表示します。</p>
+            </div></div>
+          <label class="tl-field" title="別のコマで描き始めたとき、自動で新しい絵を作るか">自動コマ <select id="tlAuto"><option value="off">しない</option><option value="blank">白紙</option><option value="copy">複製</option></select></label>
+          <span class="tl-sep"></span>
+          <button class="mini strong" id="tlExport" title="コンポジット用に連番 PNG で書き出す">連番書き出し…</button>
+          <span class="tl-mem" id="tlMem"></span>
+        </div>
+      </div>
+      <div class="tl-body" id="tlBody"><canvas id="tlCanvas"></canvas><div id="tlSpacer"></div></div>
+    </section>
+    </div>
 
     <aside id="panel" aria-label="設定">
       <section class="sec" id="colorSec">
-        <h2>色</h2>
-        <div class="sv" id="sv"><canvas id="svCanvas"></canvas><div class="knob" id="svKnob"></div></div>
-        <div class="hue" id="hue"><canvas id="hueCanvas"></canvas><div class="knob" id="hueKnob"></div></div>
+        <h2>色<span class="pm-seg" id="pickMode" role="group" aria-label="色の選び方"><button type="button" data-m="square">四角</button><button type="button" data-m="wheel">ホイール</button><button type="button" data-m="hl">色相×明るさ</button></span></h2>
+        <div class="pm" id="pmSquare">
+          <div class="sv" id="sv"><canvas id="svCanvas"></canvas><div class="knob" id="svKnob"></div></div>
+          <div class="hue" id="hue"><canvas id="hueCanvas"></canvas><div class="knob" id="hueKnob"></div></div>
+        </div>
+        <div class="pm" id="pmWheel" hidden><div class="wheel" id="wheel"><canvas id="wheelCanvas"></canvas><div class="knob" id="wheelHueKnob"></div><div class="knob" id="wheelSvKnob"></div></div></div>
+        <div class="pm" id="pmHL" hidden><div class="hlwrap"><div class="hlfield" id="hlField"><canvas id="hlCanvas"></canvas><div class="knob big" id="hlKnob"></div></div><div class="hlsat" id="hlSat" title="鮮やかさ"><canvas id="hlSatCanvas"></canvas><div class="knob bar" id="hlSatKnob"></div></div></div></div>
         <div class="color-row">
           <div class="cur" id="curSwatch" title="メイン色"></div>
           <button class="sub-sw" id="subSwatch" type="button" aria-label="サブ色と入れ替える"></button>
           <button class="swap" id="swapBtn" type="button" title="メイン色とサブ色を入れ替え（Shift+X）" aria-label="メイン色とサブ色を入れ替え"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg></button>
           <input class="field hex" id="hexInput" spellcheck="false" autocomplete="off" aria-label="カラーコード">
         </div>
+        <div class="minihead sw-head"><span>スウォッチ</span>
+          <select class="field sw-sel" id="palSel" aria-label="スウォッチのリスト"></select>
+          <div class="popwrap"><button class="mini sw-btn" type="button" id="palMenuBtn" aria-haspopup="menu" aria-expanded="false" title="リストの管理・書き出し・読み込み" aria-label="リストのメニュー">⋯</button>
+            <div class="pop fixed below" id="palMenu" role="menu" hidden>
+              <button role="menuitem" data-act="new">新しいリスト…</button>
+              <button role="menuitem" data-act="rename">名前を変更…</button>
+              <button role="menuitem" data-act="dup">複製</button>
+              <button role="menuitem" data-act="delete">削除…</button>
+              <hr>
+              <button role="menuitem" data-act="ase">このリストを書き出す（.ase）<span class="k">Photoshop・Illustrator</span></button>
+              <button role="menuitem" data-act="aco">このリストを書き出す（.aco）<span class="k">Photoshop</span></button>
+              <button role="menuitem" data-act="gpl">このリストを書き出す（.gpl）<span class="k">Krita・GIMP</span></button>
+              <button role="menuitem" data-act="aseAll">すべてのリストを書き出す（.ase）</button>
+              <hr>
+              <button role="menuitem" data-act="import">読み込む（.ase・.aco・.gpl）…</button>
+            </div></div>
+          <button class="mini sw-btn" type="button" id="swAdd" title="今の色をこのリストに加える" aria-label="今の色を加える">＋</button>
+        </div>
+        <div class="swatches" id="swatches"></div>
+        <div class="minihead"><span>最近使った色</span></div>
         <div class="recent" id="recent"></div>
       </section>
 
@@ -329,6 +448,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 </div>
 
 <input type="file" id="fileOpen" hidden>
+<input type="file" id="filePalette" hidden>
 <input type="file" id="fileImage" accept="image/*" hidden>
 <input type="file" id="fileTex" accept="image/*" hidden>
 
@@ -376,6 +496,20 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>[ と ]</dt><dd>ブラシ・消しゴム・ゆがみの大きさ</dd>
       <dt>⌘Z・Ctrl+Z</dt><dd>取り消し（2本指タップでも取り消せます）。⇧⌘Z・Ctrl+Y でやり直し</dd>
     </dl>
+    <h3>ラインブレンド・色</h3>
+    <dl>
+      <dt>J</dt><dd>ラインブレンド。色の違うところをまたいで直線を引くと、両端の色を拾ってグラデーションでつなぎます（Shift で 45° 刻み）</dd>
+      <dt>色の選び方</dt><dd>「色」の右上で 四角・ホイール・色相×明るさ を切り替えます</dd>
+      <dt>スウォッチ</dt><dd>「＋」で今の色を登録。Option＋クリック・右クリック・長押しで外します。「⋯」からリストの追加・切り替え、Photoshop 用（.ase・.aco）や Krita・GIMP 用（.gpl）の書き出し・読み込みができます</dd>
+    </dl>
+    <h3>アニメーション</h3>
+    <dl>
+      <dt>← / →</dt><dd>前・次のコマ。Option を押しながらで前・次の絵へ</dd>
+      <dt>Enter</dt><dd>再生・停止</dd>
+      <dt>N / Shift+N</dt><dd>このコマに白紙の絵を作る／直前の絵を複製する</dd>
+      <dt>O</dt><dd>オニオンスキンの表示・非表示</dd>
+      <dt>しくみ</dt><dd>各レイヤーの絵は、次の絵があるコマまで続けて表示されます（コマ打ちは絵の間隔で決まります）。背景のように動かないレイヤーは、最初の絵が最後まで続きます</dd>
+    </dl>
     <h3>表示</h3>
     <dl>
       <dt>Z</dt><dd>ズームツール。クリックで拡大、Option＋クリックで縮小、左右ドラッグで連続ズーム</dd>
@@ -393,6 +527,29 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
     <div class="dlg-actions"><button class="primary" id="helpClose">閉じる</button></div>
+  </div>
+</div>
+
+<div class="modal" id="seqModal" role="dialog" aria-modal="true" aria-labelledby="seqTitle">
+  <div class="dialog">
+    <h2 id="seqTitle">連番で書き出す</h2>
+    <p class="note" style="margin-bottom:10px">After Effects や DaVinci Resolve で重ねやすい、透明な背景の PNG 連番を書き出します。（<span id="seqFps"></span>、<span id="seqSize"></span>）</p>
+    <div class="row2"><span>書き出す絵</span><div class="seg" id="seqWhat"><button type="button" data-v="comp">合成した絵</button><button type="button" data-v="layers">レイヤーごと</button><button type="button" data-v="both">両方</button></div></div>
+    <div class="row2"><span>範囲</span><div class="inl"><input class="field" type="number" id="seqFrom" min="1"> 〜 <input class="field" type="number" id="seqTo" min="1"> コマ目</div></div>
+    <div class="row2"><span>大きさ</span><div class="seg" id="seqScale"><button type="button" data-v="0.5">50%</button><button type="button" data-v="1">100%</button><button type="button" data-v="2">200%</button></div></div>
+    <div class="row2"><span>番号</span><div class="inl">開始 <input class="field" type="number" id="seqStart" min="0"> 桁数 <input class="field" type="number" id="seqDigits" min="1" max="8"></div></div>
+    <label class="check"><input type="checkbox" id="seqHidden"><span>非表示のレイヤーも書き出す（レイヤーごとのとき）</span></label>
+    <p class="note" id="seqExample"></p>
+    <p class="note">合成した絵は、いま表示しているレイヤーを重ねたものです。透明な背景にしたいときは「背景」レイヤーを非表示にしてください。Chrome・Edge で直接開いているときは保存先のフォルダを選べます。それ以外は ZIP にまとめて保存します。</p>
+    <div class="dlg-actions"><button class="mini" id="seqCancel">キャンセル</button><button class="primary" id="seqOk">書き出す</button></div>
+  </div>
+</div>
+
+<div class="modal" id="promptModal" role="dialog" aria-modal="true" aria-labelledby="promptMsg">
+  <div class="dialog">
+    <p id="promptMsg" style="margin:0 0 10px;font-size:13px"></p>
+    <input class="field" id="promptInput" autocomplete="off" spellcheck="false" style="height:34px;font-size:13px">
+    <div class="dlg-actions"><button class="mini" id="promptCancel">キャンセル</button><button class="primary" id="promptOk">OK</button></div>
   </div>
 </div>
 
@@ -671,6 +828,7 @@ const DEFAULTS = {
   eraser: { tip:'round', size:48, opacity:100, stab:0, hardness:70, angle:0, spacing:8, pSize:40, pOpacity:0, mix:0, load:0, jMode:'none', jh:0, js:0, jv:0, jScale:40, jSteps:1, tex:'none', tStr:50, tScale:100, tRot:0, tMode:'alpha', tRand:true },
   fill:   { shape:'free', op:'paint', stab:0, fillType:'solid', gShape:'linear', gColors:'mainsub', gDir:'line', gAngle:90, opacity:100, feather:0, jMode:'fill', jh:3, js:8, jv:8, jScale:60, jSteps:1, tex:'paper', tStr:30, tScale:100, tRot:0, tMode:'both', tRand:true },
   liquify:   { mode:'push', size:140, strength:50 },
+  lineblend: { size:60, opacity:100, endFade:40, side:8, sample:'all', sampleR:4, mix:'oklab', jMode:'none', jh:0, js:0, jv:0, jScale:40, jSteps:1, tex:'none', tStr:40, tScale:100, tRot:0, tMode:'both', tRand:true },
   transform: { target:'layer' },
   zoom: {}, picker: {},
 };
@@ -690,9 +848,9 @@ function saveSettings(){
   settingsTimer = setTimeout(() => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {} }, 400);
 }
 
-const TOOL_NAMES = { fill:'囲い塗り', brush:'ブラシ', eraser:'消しゴム', liquify:'ゆがみ', transform:'移動・変形', picker:'スポイト', zoom:'ズーム' };
-const TOOL_KEYS = { fill:'L', brush:'B', eraser:'E', liquify:'W', transform:'V', picker:'I', zoom:'Z' };
-const PAINT_TOOLS = new Set(['fill', 'brush', 'eraser', 'liquify']);
+const TOOL_NAMES = { fill:'囲い塗り', brush:'ブラシ', lineblend:'ラインブレンド', eraser:'消しゴム', liquify:'ゆがみ', transform:'移動・変形', picker:'スポイト', zoom:'ズーム' };
+const TOOL_KEYS = { fill:'L', brush:'B', lineblend:'J', eraser:'E', liquify:'W', transform:'V', picker:'I', zoom:'Z' };
+const PAINT_TOOLS = new Set(['fill', 'brush', 'lineblend', 'eraser', 'liquify']);
 const showPatch = s => s.jMode === 'patch' || s.jMode === 'both';
 const showTex = s => s.tex !== 'none';
 const isGrad = s => s.op === 'paint' && s.fillType === 'grad';
@@ -777,6 +935,18 @@ const SCHEMA = {
     { t:'actions', items:[['全体を表示', () => fitView()], ['100%', () => setZoom(1)], ['200%', () => setZoom(2)]] },
     { t:'note', text:'クリックで拡大、Option（Alt）を押しながらクリックで縮小。左右にドラッグすると連続して拡大縮小します。' },
   ],
+  lineblend: [
+    { t:'note', text:'色の違うところをまたいで直線を引くと、両端の色を拾って線の中をグラデーションでつなぎます。Shift で 45° 刻み。' },
+    { t:'range', k:'size', label:'太さ', min:2, max:600, unit:'px' },
+    { t:'range', k:'opacity', label:'不透明度', min:1, max:100, unit:'%' },
+    { t:'range', k:'endFade', label:'両端のぼかし', min:0, max:400, unit:'px' },
+    { t:'range', k:'side', label:'ふちのぼかし', min:0, max:100, unit:'%' },
+    { t:'h', label:'色の拾い方' },
+    { t:'select', k:'sample', label:'拾う絵', opts:[['all','見えている絵全体'],['layer','このレイヤーだけ']] },
+    { t:'range', k:'sampleR', label:'拾う範囲', min:0, max:30, unit:'px' },
+    { t:'select', k:'mix', label:'混ざり方', opts:[['oklab','明るさを自然に'],['rgb','そのまま（RGB）']] },
+    ...TEXTURE('lineblend'),
+  ],
   picker: [
     { t:'note', text:'キャンバスを押して色を拾います。囲い塗り・ブラシ・消しゴム・ゆがみを使っている間も、Option（Alt）キーを押しながらクリックすれば色を拾えます。' },
   ],
@@ -798,11 +968,48 @@ function allocScratch(){
   disp = mk(DW, DH); dispCtx = disp.getContext('2d');
   prev = mk(DW, DH); prevCtx = prev.getContext('2d');
   clipBuf = mk(DW, DH); clipCtx = clipBuf.getContext('2d');
+  EMPTY = mk(DW, DH); EMPTY_CTX = EMPTY.getContext('2d');
+  onionBuf = mk(DW, DH); onionCtx = onionBuf.getContext('2d');
 }
-function makeLayer(name){
-  const c = mk(DW, DH), t = document.createElement('canvas');
+/* ================= アニメーション（コマ）の土台 ================= */
+const anim = { frames: 24, fps: 12, cur: 0, loop: true, playing: false, autoKey: 'off', onion: { on: false, prev: 2, next: 1, opacity: 30, tint: true } };
+try {
+  const o = JSON.parse(localStorage.getItem('kakoi.anim') || 'null');
+  if (o){ if (o.onion) Object.assign(anim.onion, o.onion); if (['off', 'blank', 'copy'].includes(o.autoKey)) anim.autoKey = o.autoKey; if (typeof o.loop === 'boolean') anim.loop = o.loop; }
+} catch (e) {}
+function saveAnimPrefs(){ try { localStorage.setItem('kakoi.anim', JSON.stringify({ onion: anim.onion, autoKey: anim.autoKey, loop: anim.loop })); } catch (e) {} }
+let EMPTY = null, EMPTY_CTX = null, onionBuf = null, onionCtx = null;
+function newCel(){ const c = mk(DW, DH); return { canvas: c, ctx: c.getContext('2d'), dirty: true, buf: null }; }
+function heldKey(L, f){ let best = -1; for (const k of L.cels.keys()) if (k <= f && k > best) best = k; return best; }
+function heldCel(L, f = anim.cur){ const k = heldKey(L, f); return k < 0 ? null : L.cels.get(k); }
+function sortedKeys(L){ return [...L.cels.keys()].sort((a, b) => a - b); }
+let lastNewCel = null;
+// 描く前に呼ぶ：このコマに描ける絵（セル）がなければ用意する
+function ensureCel(L){
+  const k = heldKey(L, anim.cur);
+  if (k === anim.cur) return;
+  if (k >= 0 && anim.autoKey === 'off') return;
+  const cel = newCel();
+  if (k >= 0 && anim.autoKey === 'copy') cel.ctx.drawImage(L.cels.get(k).canvas, 0, 0);
+  L.cels.set(anim.cur, cel);
+  lastNewCel = { L, f: anim.cur, cel };
+  drawTimeline(); syncAnimUI(); warnMemory();
+}
+async function celBytes(cel){
+  if (!cel.buf || cel.dirty){ cel.dirty = false; cel.buf = await (await canvasBlob(cel.canvas)).arrayBuffer(); }
+  return new Uint8Array(cel.buf);
+}
+function celCount(){ let n = 0; for (const L of layers) n += L.cels.size; return n; }
+const memMB = () => Math.round(celCount() * DW * DH * 4 / 1048576);
+let memWarned = false;
+function warnMemory(){ const mb = memMB(); if (mb > 900 && !memWarned){ memWarned = true; toast(`コマが増えてメモリを多く使っています（約${mb}MB）。キャンバスを小さめにすると安定します`); } }
+function makeLayer(name, noCel){
+  const t = document.createElement('canvas');
   t.className = 'thumb';
-  const L = { id: ++idSeq, name: name ?? `レイヤー ${++nameSeq}`, canvas: c, ctx: c.getContext('2d'), visible: true, opacity: 1, blend: 'source-over', lock: false, clip: false, thumb: t };
+  const L = { id: ++idSeq, name: name ?? `レイヤー ${++nameSeq}`, cels: new Map(), visible: true, opacity: 1, blend: 'source-over', lock: false, clip: false, thumb: t };
+  Object.defineProperty(L, 'canvas', { get(){ const c = heldCel(L); return c ? c.canvas : EMPTY; } });
+  Object.defineProperty(L, 'ctx', { get(){ const c = heldCel(L); return c ? c.ctx : EMPTY_CTX; } });
+  if (!noCel) L.cels.set(0, newCel());
   sizeThumb(L);
   return L;
 }
@@ -817,7 +1024,9 @@ function updateThumb(L){
   t.drawImage(L.canvas, 0, 0, L.thumb.width, L.thumb.height);
 }
 function resetDoc(w, h){
+  if (anim.playing) stopPlay();
   DW = w; DH = h; idSeq = 0; nameSeq = 0; op = null; xf = null;
+  anim.cur = 0; anim.frames = 24; anim.fps = 12; lastNewCel = null; memWarned = false;
   allocScratch();
   undoStack.length = 0; redoStack.length = 0;
 }
@@ -825,7 +1034,7 @@ function finishDoc(ls, name){
   layers = ls; active = ls[ls.length - 1];
   layers.forEach(updateThumb);
   setDocName(name); fileDirty = false;
-  renderLayers(); updateUndo(); renderToolPanel(); fitView(); requestRender(true);
+  renderLayers(); updateUndo(); renderToolPanel(); fitView(); requestRender(true); syncAnimUI(); drawTimeline();
 }
 function newDocument(w, h, bg){
   resetDoc(w, h); fileHandle = null;
@@ -842,13 +1051,21 @@ const fitScale = (w, h) => Math.min(1, 3200 / w, 3200 / h, Math.sqrt(6.6e6 / (w 
 
 /* ================= 履歴 ================= */
 const undoStack = [], redoStack = [], MAXH = 40;
-function snap(){ return { order: layers.slice(), props: layers.map(L => [L, L.name, L.visible, L.opacity, L.blend, L.lock, L.clip]), active }; }
+function snap(){ return { order: layers.slice(), props: layers.map(L => [L, L.name, L.visible, L.opacity, L.blend, L.lock, L.clip, new Map(L.cels)]), active, frames: anim.frames, fps: anim.fps }; }
 function restoreStruct(S){
   layers = S.order.slice();
-  for (const [L, n, v, o, b, k, c] of S.props){ L.name = n; L.visible = v; L.opacity = o; L.blend = b; L.lock = k; L.clip = c; }
+  for (const [L, n, v, o, b, k, c, cels] of S.props){ L.name = n; L.visible = v; L.opacity = o; L.blend = b; L.lock = k; L.clip = c; if (cels) L.cels = new Map(cels); }
   active = S.active;
+  if (S.frames){ anim.frames = S.frames; anim.fps = S.fps; if (anim.cur >= anim.frames) anim.cur = anim.frames - 1; }
+  layers.forEach(updateThumb); syncAnimUI(); drawTimeline();
 }
 function pushHistory(en){
+  if (en.kind === 'px' && !en.ctx){
+    en.ctx = en.L.ctx; en.f = anim.cur; en.cel = heldCel(en.L);
+    if (lastNewCel && lastNewCel.L === en.L && lastNewCel.f === anim.cur) en.newCel = lastNewCel;
+    lastNewCel = null;
+  }
+  if (en.cel) en.cel.dirty = true;
   undoStack.push(en);
   if (undoStack.length > MAXH) undoStack.shift();
   redoStack.length = 0;
@@ -858,10 +1075,16 @@ function pushHistory(en){
 function structChange(fn){
   const b = snap(); fn(); const a = snap();
   pushHistory({ kind: 'struct', before: b, after: a });
-  renderLayers(); requestRender(true);
+  renderLayers(); requestRender(true); drawTimeline(); syncAnimUI();
 }
 function applyEntry(en, dir){
-  if (en.kind === 'px'){ en.L.ctx.putImageData(dir < 0 ? en.before : en.after, en.x, en.y); updateThumb(en.L); }
+  if (en.kind === 'px'){
+    if (en.newCel){ if (dir < 0) en.newCel.L.cels.delete(en.newCel.f); else en.newCel.L.cels.set(en.newCel.f, en.newCel.cel); }
+    (en.ctx || en.L.ctx).putImageData(dir < 0 ? en.before : en.after, en.x, en.y);
+    if (en.cel) en.cel.dirty = true;
+    if (en.f != null && en.f !== anim.cur && en.f < anim.frames){ anim.cur = en.f; layers.forEach(updateThumb); syncFrameLabel(); }
+    updateThumb(en.L); drawTimeline();
+  }
   else if (en.kind === 'struct') restoreStruct(dir < 0 ? en.before : en.after);
   else if (en.kind === 'multi'){ const list = dir < 0 ? en.list.slice().reverse() : en.list; for (const x of list) applyEntry(x, dir); }
 }
@@ -876,7 +1099,7 @@ function redo(){
   const en = redoStack.pop(); if (!en) return;
   applyEntry(en, 1); undoStack.push(en); afterHistory();
 }
-function afterHistory(){ fileDirty = true; renderLayers(); requestRender(true); updateUndo(); scheduleSave(); }
+function afterHistory(){ fileDirty = true; renderLayers(); requestRender(true); updateUndo(); scheduleSave(); syncAnimUI(); drawTimeline(); }
 function updateUndo(){ $('#undoBtn').disabled = !undoStack.length && !xf; $('#redoBtn').disabled = !redoStack.length; }
 const busy = () => !!(op && op.pointerId != null);
 function settle(){
@@ -960,6 +1183,7 @@ function render(){
   vctx.fillStyle = checkPat; vctx.fillRect(0, 0, DW, DH);
   vctx.imageSmoothingEnabled = view.s < 1.5 || !isRightAngle(); vctx.imageSmoothingQuality = 'high';
   vctx.drawImage(comp, 0, 0);
+  if (anim.onion.on && !anim.playing) drawOnion(vctx);
   vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   drawOverlay(vctx);
   updateStageBar();
@@ -1061,6 +1285,7 @@ function drawOverlay(ctx){
     ctx.restore();
   }
   if (op && op.kind === 'gradLine') drawGradPreview(ctx);
+  if (op && op.kind === 'lineblend') drawLineBlendPreview(ctx);
   if (op && op.kind === 'xfLasso' && op.pts.length > 1){
     ctx.save(); ctx.beginPath(); pathShape(ctx, { type: 'free', pts: op.pts }, toScreen); strokeTwoTone(ctx); ctx.restore();
   }
@@ -1139,6 +1364,7 @@ const diameterAt = (s, pr) => Math.max(.7, s.size * (1 - (s.pSize / 100) * (1 - 
 function beginStroke(tool, e, d){
   const L = active;
   if (!canPaint(L, tool === 'eraser')) return;
+  ensureCel(L);
   const s = settings[tool], proc = makeProc(s, tool);
   rawCtx.clearRect(0, 0, DW, DH);
   if (proc.active) dispCtx.clearRect(0, 0, DW, DH);
@@ -1364,6 +1590,7 @@ function snapAngle(a, b){
 }
 function commitFill(sh, line){
   const s = settings.fill, L = active;
+  ensureCel(L);
   const pad = s.feather + 2, b = shapeBounds(sh);
   const x = Math.max(0, Math.floor(b.x0 - pad)), y = Math.max(0, Math.floor(b.y0 - pad));
   const x2 = Math.min(DW, Math.ceil(b.x1 + pad)), y2 = Math.min(DH, Math.ceil(b.y1 + pad));
@@ -1417,10 +1644,115 @@ function commitFill(sh, line){
   requestRender(true);
 }
 
+/* ================= ラインブレンド ================= */
+const s2l = v => { v /= 255; return v <= .04045 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+const l2s = v => clamp((v <= .0031308 ? v * 12.92 : 1.055 * Math.pow(Math.max(0, v), 1 / 2.4) - .055) * 255, 0, 255);
+function toOklab(c){
+  const r = s2l(c.r), g = s2l(c.g), b = s2l(c.b);
+  const l = Math.cbrt(.4122214708 * r + .5363325363 * g + .0514459929 * b);
+  const m = Math.cbrt(.2119034982 * r + .6806995451 * g + .1073969566 * b);
+  const s = Math.cbrt(.0883024619 * r + .2817188376 * g + .6299787005 * b);
+  return [.2104542553 * l + .7936177850 * m - .0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .8086757660 * s];
+}
+function fromOklab(L, a, b){
+  const l = (L + .3963377774 * a + .2158037573 * b) ** 3, m = (L - .1055613458 * a - .0638541728 * b) ** 3, s = (L - .0894841775 * a - 1.2914855480 * b) ** 3;
+  return { r: l2s(4.0767416621 * l - 3.3077115913 * m + .2309699292 * s), g: l2s(-1.2684380046 * l + 2.6097574011 * m - .3413193965 * s), b: l2s(-.0041960863 * l - .7034186147 * m + 1.7076147010 * s) };
+}
+function blendLUT(c0, c1, mode){
+  const lut = new Float32Array(256 * 4), o0 = mode === 'oklab' ? toOklab(c0) : null, o1 = mode === 'oklab' ? toOklab(c1) : null;
+  for (let i = 0; i < 256; i++){
+    const t = i / 255;
+    const c = o0 ? fromOklab(o0[0] + (o1[0] - o0[0]) * t, o0[1] + (o1[1] - o0[1]) * t, o0[2] + (o1[2] - o0[2]) * t)
+                 : { r: c0.r + (c1.r - c0.r) * t, g: c0.g + (c1.g - c0.g) * t, b: c0.b + (c1.b - c0.b) * t };
+    lut[i * 4] = c.r; lut[i * 4 + 1] = c.g; lut[i * 4 + 2] = c.b; lut[i * 4 + 3] = c0.a + (c1.a - c0.a) * t;
+  }
+  return lut;
+}
+function sampleBlend(p, s){
+  const r = Math.round(s.sampleR), x0 = Math.floor(p.x) - r, y0 = Math.floor(p.y) - r, n = r * 2 + 1;
+  const sx = Math.max(0, x0), sy = Math.max(0, y0), ex = Math.min(DW, x0 + n), ey = Math.min(DH, y0 + n);
+  if (ex <= sx || ey <= sy) return null;
+  let src;
+  if (s.sample === 'layer') src = active.ctx;
+  else { if (qCompose){ compose(); qCompose = false; } src = compCtx; }
+  const d = src.getImageData(sx, sy, ex - sx, ey - sy).data;
+  let R = 0, G = 0, B = 0, A = 0, cnt = 0;
+  for (let i = 0; i < d.length; i += 4){ const a = d[i + 3] / 255; R += d[i] * a; G += d[i + 1] * a; B += d[i + 2] * a; A += a; cnt++; }
+  if (A < .01) return { r: 0, g: 0, b: 0, a: 0 };
+  return { r: R / A, g: G / A, b: B / A, a: A / cnt };
+}
+function blendEnds(A, B, s){
+  let c0 = sampleBlend(A, s) || { r: 0, g: 0, b: 0, a: 0 }, c1 = sampleBlend(B, s) || { r: 0, g: 0, b: 0, a: 0 };
+  if (c0.a < .02 && c1.a < .02) return [{ ...color, a: 1 }, { ...sub, a: 1 }];
+  if (c0.a < .02) c0 = { ...c1, a: 0 };
+  if (c1.a < .02) c1 = { ...c0, a: 0 };
+  return [c0, c1];
+}
+function lineBlendCorners(A, B, hw){
+  const len = Math.hypot(B.x - A.x, B.y - A.y) || 1, nx = -(B.y - A.y) / len * hw, ny = (B.x - A.x) / len * hw;
+  return [{ x: A.x + nx, y: A.y + ny }, { x: B.x + nx, y: B.y + ny }, { x: B.x - nx, y: B.y - ny }, { x: A.x - nx, y: A.y - ny }];
+}
+function drawLineBlendPreview(ctx){
+  const s = settings.lineblend, A = op.a, B = op.b;
+  if (Math.hypot(B.x - A.x, B.y - A.y) < .5) return;
+  const [c0, c1] = blendEnds(A, B, s), P = lineBlendCorners(A, B, s.size / 2).map(toScreen), SA = toScreen(A), SB = toScreen(B);
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(P[0].x, P[0].y); for (let i = 1; i < 4; i++) ctx.lineTo(P[i].x, P[i].y); ctx.closePath();
+  const g = ctx.createLinearGradient(SA.x, SA.y, SB.x, SB.y);
+  g.addColorStop(0, rgbaStr(c0)); g.addColorStop(1, rgbaStr(c1));
+  ctx.globalAlpha = .85; ctx.fillStyle = g; ctx.fill(); ctx.globalAlpha = 1;
+  strokeTwoTone(ctx);
+  ctx.beginPath(); ctx.moveTo(SA.x, SA.y); ctx.lineTo(SB.x, SB.y); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.stroke();
+  for (const [P0, c] of [[SA, c0], [SB, c1]]){
+    ctx.beginPath(); ctx.arc(P0.x, P0.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = rgbStr(c); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke(); ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(0,0,0,.6)'; ctx.stroke();
+  }
+  ctx.restore();
+}
+function commitLineBlend(A, B){
+  const s = settings.lineblend, L = active;
+  if (!canPaint(L, false)) return;
+  const len = Math.hypot(B.x - A.x, B.y - A.y);
+  if (len < 1) return;
+  const [c0, c1] = blendEnds(A, B, s);
+  ensureCel(L);
+  const hw = s.size / 2, ux = (B.x - A.x) / len, uy = (B.y - A.y) / len, nx = -uy, ny = ux;
+  const C = lineBlendCorners(A, B, hw);
+  const x0 = Math.max(0, Math.floor(Math.min(...C.map(p => p.x))) - 1), y0 = Math.max(0, Math.floor(Math.min(...C.map(p => p.y))) - 1);
+  const x1 = Math.min(DW, Math.ceil(Math.max(...C.map(p => p.x))) + 1), y1 = Math.min(DH, Math.ceil(Math.max(...C.map(p => p.y))) + 1);
+  const w = x1 - x0, h = y1 - y0;
+  if (w <= 0 || h <= 0) return;
+  const img = new ImageData(w, h), d = img.data, lut = blendLUT(c0, c1, s.mix);
+  const ef = Math.min(s.endFade, len / 2), sf = hw * s.side / 100;
+  for (let y = 0; y < h; y++){
+    const py = y0 + y + .5 - A.y;
+    for (let x = 0; x < w; x++){
+      const px = x0 + x + .5 - A.x, t = px * ux + py * uy;
+      if (t < 0 || t > len) continue;
+      const dd = Math.abs(px * nx + py * ny);
+      if (dd > hw) continue;
+      let a = 1;
+      if (ef > 0){ const q = Math.min(t, len - t) / ef; if (q < 1) a *= q * q * (3 - 2 * q); }
+      if (sf > 0){ const q = (hw - dd) / sf; if (q < 1) a *= q * q * (3 - 2 * q); }
+      const li = Math.min(255, (t / len * 255) | 0) * 4, o = (y * w + x) * 4;
+      d[o] = lut[li]; d[o + 1] = lut[li + 1]; d[o + 2] = lut[li + 2]; d[o + 3] = a * lut[li + 3] * 255;
+    }
+  }
+  processImage(img, x0, y0, makeProc(s, 'lineblend'));
+  const tmp = mk(w, h); tmp.getContext('2d').putImageData(img, 0, 0);
+  const bef = L.ctx.getImageData(x0, y0, w, h);
+  L.ctx.globalAlpha = s.opacity / 100; L.ctx.globalCompositeOperation = L.lock ? 'source-atop' : 'source-over';
+  L.ctx.drawImage(tmp, x0, y0);
+  L.ctx.globalAlpha = 1; L.ctx.globalCompositeOperation = 'source-over';
+  pushHistory({ kind: 'px', L, x: x0, y: y0, before: bef, after: L.ctx.getImageData(x0, y0, w, h) });
+  updateThumb(L); requestRender(true);
+}
+
 /* ================= ゆがみ（Liquify） ================= */
 function beginLiquify(e, d){
   const L = active;
   if (!canPaint(L, false)) return;
+  ensureCel(L);
   beforeCtx.globalCompositeOperation = 'copy'; beforeCtx.drawImage(L.canvas, 0, 0); beforeCtx.globalCompositeOperation = 'source-over';
   op = { kind: 'liquify', L, s: settings.liquify, pointerId: e.pointerId, pointerType: e.pointerType, img: L.ctx.getImageData(0, 0, DW, DH), pos: d, last: d, rect: null, raf: 0 };
   if (op.s.mode !== 'push'){ const loop = () => { if (!op || op.kind !== 'liquify') return; liquifyStep(op.pos.x, op.pos.y, 0, 0); op.raf = requestAnimationFrame(loop); }; loop(); }
@@ -1529,7 +1861,7 @@ function drawXfHandles(ctx){
 }
 function xfStart(L, float, fx, fy, base){
   const orig = mk(DW, DH); orig.getContext('2d').drawImage(L.canvas, 0, 0);
-  xf = { L, float, w: float.width, h: float.height, cx: fx + float.width / 2, cy: fy + float.height / 2, sx: 1, sy: 1, rot: 0, flipX: false, flipY: false, base, orig, drag: null };
+  xf = { L, ctx: L.ctx, float, w: float.width, h: float.height, cx: fx + float.width / 2, cy: fy + float.height / 2, sx: 1, sy: 1, rot: 0, flipX: false, flipY: false, base, orig, drag: null };
   xf.cx0 = xf.cx; xf.cy0 = xf.cy;
   renderToolPanel(); updateUndo(); requestRender(true);
 }
@@ -1607,12 +1939,12 @@ function xfCommit(){
   const X = xf; xf = null;
   if (op && op.kind === 'xfDrag') op = null;
   if (!xfIsIdentity(X)){
-    const L = X.L, bef = X.orig.getContext('2d').getImageData(0, 0, DW, DH);
-    L.ctx.globalAlpha = 1;
-    if (X.base){ L.ctx.globalCompositeOperation = 'copy'; L.ctx.drawImage(X.base, 0, 0); L.ctx.globalCompositeOperation = 'source-over'; }
-    else L.ctx.clearRect(0, 0, DW, DH);
-    drawFloat(L.ctx, X);
-    pushHistory({ kind: 'px', L, x: 0, y: 0, before: bef, after: L.ctx.getImageData(0, 0, DW, DH) });
+    const L = X.L, C = X.ctx, bef = X.orig.getContext('2d').getImageData(0, 0, DW, DH);
+    C.globalAlpha = 1;
+    if (X.base){ C.globalCompositeOperation = 'copy'; C.drawImage(X.base, 0, 0); C.globalCompositeOperation = 'source-over'; }
+    else C.clearRect(0, 0, DW, DH);
+    drawFloat(C, X);
+    pushHistory({ kind: 'px', L, ctx: C, f: anim.cur, cel: heldCel(L), x: 0, y: 0, before: bef, after: C.getImageData(0, 0, DW, DH) });
     updateThumb(L);
   }
   renderToolPanel(); updateUndo(); updateCursor(); requestRender(true);
@@ -1688,6 +2020,7 @@ function updatePinch(){
 const waitingOp = () => op && (op.kind === 'poly' || (op.kind === 'gradLine' && op.pointerId == null));
 
 viewEl.addEventListener('pointerdown', e => {
+  if (anim.playing) stopPlay();
   const ae = document.activeElement;
   if (ae && ae !== document.body && ae.blur) ae.blur();
   closePops();
@@ -1718,6 +2051,7 @@ viewEl.addEventListener('pointerdown', e => {
     case 'brush': case 'eraser': beginStroke(tool, e, d); break;
     case 'fill': beginFill(e, d); break;
     case 'liquify': beginLiquify(e, d); break;
+    case 'lineblend': if (canPaint(active, false)){ op = { kind: 'lineblend', pointerId: e.pointerId, pointerType: e.pointerType, a: d, b: d }; requestRender(); } break;
     case 'zoom': op = { kind: 'zoomDrag', pointerId: e.pointerId, pointerType: e.pointerType, sx: p.x, sy: p.y, s0: view.s, doc: d, moved: false, out: e.altKey }; break;
     case 'transform':
       if (xf && xf.L !== active) xfCommit();
@@ -1754,6 +2088,7 @@ viewEl.addEventListener('pointermove', e => {
       case 'gradLine': { const d = toDoc(p); op.b = e.shiftKey ? snapAngle(op.a, d) : d; requestRender(); break; }
       case 'xfLasso': { const d = toDoc(p), last = op.pts[op.pts.length - 1]; if (Math.hypot(d.x - last.x, d.y - last.y) >= 1.5 / view.s) op.pts.push(d); requestRender(); break; }
       case 'xfDrag': xfMove(toDoc(p), e.shiftKey); break;
+      case 'lineblend': { const d = toDoc(p); op.b = e.shiftKey ? snapAngle(op.a, d) : d; requestRender(); break; }
       case 'zoomDrag': {
         const dx = p.x - op.sx;
         if (Math.abs(dx) > 4) op.moved = true;
@@ -1790,6 +2125,7 @@ function finishPointer(e, cancelled){
         break;
       case 'xfLasso': { const pts = op.pts; op = null; if (pts.length >= 3) xfStartLasso(pts); break; }
       case 'xfDrag': op = null; if (xf) xf.drag = null; updateCursor(); break;
+      case 'lineblend': { const o = op; op = null; if (Math.hypot(o.b.x - o.a.x, o.b.y - o.a.y) * view.s >= 3) commitLineBlend(o.a, o.b); break; }
       case 'zoomDrag': { const o = op; op = null; if (!o.moved) zoomAt(o.out ? 1 / 1.6 : 1.6, o.sx, o.sy); break; }
     }
   }
@@ -1827,14 +2163,14 @@ function updateCursor(){
   if (spaceDown || rotKey) c = 'grab';
   else if (currentTool === 'zoom') c = altDown ? 'zoom-out' : 'zoom-in';
   else if (altDown && PAINT_TOOLS.has(currentTool)) c = 'crosshair';
-  else if (currentTool === 'picker' || currentTool === 'fill') c = 'crosshair';
+  else if (currentTool === 'picker' || currentTool === 'fill' || currentTool === 'lineblend') c = 'crosshair';
   else if (currentTool === 'transform') c = xf ? 'move' : 'crosshair';
   viewEl.style.cursor = c;
 }
 const isTyping = t => t && ((t.tagName === 'INPUT' && !['range', 'checkbox', 'radio', 'button'].includes(t.type)) || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
 function adjSize(dir){
-  if (!['brush', 'eraser', 'liquify'].includes(currentTool)) return;
-  const s = settings[currentTool], mx = currentTool === 'liquify' ? 600 : 400;
+  if (!['brush', 'eraser', 'liquify', 'lineblend'].includes(currentTool)) return;
+  const s = settings[currentTool], mx = (currentTool === 'liquify' || currentTool === 'lineblend') ? 600 : 400;
   s.size = clamp(Math.round(dir > 0 ? s.size * 1.15 + 1 : s.size / 1.15 - 1), 1, mx);
   saveSettings(); renderToolPanel(); requestRender();
 }
@@ -1868,11 +2204,21 @@ window.addEventListener('keydown', e => {
     xf.cx += (t.x - o.x) / len * st; xf.cy += (t.y - o.y) / len * st;
     requestRender(true); return;
   }
+  if ((e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.key === ',' || e.key === '.') && e.target.type !== 'range'){
+    e.preventDefault();
+    const dir = (e.code === 'ArrowRight' || e.key === '.') ? 1 : -1;
+    stopPlay();
+    if (e.altKey) stepKey(dir); else setFrame(anim.cur + dir);
+    return;
+  }
   if (e.code === 'KeyR'){ e.preventDefault(); if (e.shiftKey) rotateTo(0); else if (!rotKey){ rotKey = true; updateCursor(); } return; }
   if (e.code === 'KeyH'){ setViewFlip(!view.flip); return; }
   const shapes = { Digit1:'free', Digit2:'poly', Digit3:'rect', Digit4:'ellipse', Digit5:'fan' };
   switch (e.code){
     case 'KeyB': setTool('brush'); break;
+    case 'KeyJ': setTool('lineblend'); break;
+    case 'KeyN': keyAction(e.shiftKey ? 'copy' : 'blank'); break;
+    case 'KeyO': toggleOnion(); break;
     case 'KeyE': setTool('eraser'); break;
     case 'KeyL': setTool('fill'); break;
     case 'KeyW': setTool('liquify'); break;
@@ -1888,7 +2234,8 @@ window.addEventListener('keydown', e => {
       if (currentTool === 'fill'){ settings.fill.fillType = settings.fill.fillType === 'grad' ? 'solid' : 'grad'; settings.fill.op = 'paint'; saveSettings(); renderToolPanel(); toast(settings.fill.fillType === 'grad' ? 'グラデーション' : '単色'); }
       break;
     case 'Enter': case 'NumpadEnter':
-      if (op && op.kind === 'poly') closePoly(); else if (xf && !op) xfCommit();
+      if (e.target && e.target.tagName === 'BUTTON') break;
+      if (op && op.kind === 'poly') closePoly(); else if (xf && !op) xfCommit(); else if (!op) play();
       break;
     case 'Escape':
       if (op && op.pointerId == null) cancelOp(); else if (xf && !op) xfCancel();
@@ -2033,7 +2380,9 @@ function setColor(c){
 }
 function swapColors(){ const m = { ...color }; setColor(sub); sub = m; drawSV(); syncColor(false); }
 function syncColor(redrawSV){
-  if (redrawSV) drawSV();
+  if (redrawSV && pickMode === 'square') drawSV();
+  if (pickMode === 'wheel') drawWheel();
+  else if (pickMode === 'hl') updateHL(false);
   $('#svKnob').style.left = (hsv.s * 100) + '%'; $('#svKnob').style.top = ((1 - hsv.v) * 100) + '%';
   $('#hueKnob').style.left = (hsv.h * 100) + '%';
   const hex = toHex(color), sh = toHex(sub);
@@ -2059,14 +2408,6 @@ function drawHue(){
   for (let i = 0; i <= 12; i++){ toRGB(i / 12, 1, 1); g.addColorStop(i / 12, `rgb(${RGB[0] | 0},${RGB[1] | 0},${RGB[2] | 0})`); }
   c.fillStyle = g; c.fillRect(0, 0, w, h);
 }
-function sizePicker(){
-  const dpr = DPR();
-  for (const [elx, cv] of [[svEl, svCanvas], [hueEl, hueCanvas]]){
-    const w = Math.max(1, Math.round(elx.clientWidth * dpr)), h = Math.max(1, Math.round(elx.clientHeight * dpr));
-    if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
-  }
-  drawSV(); drawHue();
-}
 function dragOn(elx, fn){
   elx.addEventListener('pointerdown', e => {
     elx.setPointerCapture(e.pointerId);
@@ -2079,6 +2420,319 @@ function dragOn(elx, fn){
 }
 dragOn(svEl, (x, y) => { hsv.s = x; hsv.v = 1 - y; toRGB(hsv.h, hsv.s, hsv.v); color = { r: RGB[0], g: RGB[1], b: RGB[2] }; syncColor(false); });
 dragOn(hueEl, x => { setHSV(Math.min(x, .9999), hsv.s, hsv.v); });
+// --- 色の選び方：四角／ホイール／色相×明るさ（HEAVYPAINT 風） ---
+const wheelEl = $('#wheel'), wheelCanvas = $('#wheelCanvas'), hlFieldEl = $('#hlField'), hlCanvas = $('#hlCanvas'), hlSatEl = $('#hlSat'), hlSatCanvas = $('#hlSatCanvas');
+let pickMode = (() => { try { const m = localStorage.getItem('kakoi.pickMode'); return ['square', 'wheel', 'hl'].includes(m) ? m : 'square'; } catch (e){ return 'square'; } })();
+function setPickMode(m){
+  pickMode = m;
+  for (const b of $('#pickMode').children) b.setAttribute('aria-pressed', String(b.dataset.m === m));
+  $('#pmSquare').hidden = m !== 'square'; $('#pmWheel').hidden = m !== 'wheel'; $('#pmHL').hidden = m !== 'hl';
+  try { localStorage.setItem('kakoi.pickMode', m); } catch (e) {}
+  requestAnimationFrame(() => { sizePicker(); syncColor(true); });
+}
+for (const b of $('#pickMode').children) b.addEventListener('click', () => setPickMode(b.dataset.m));
+function fitCanvas(elx, cv){
+  const dpr = DPR(), w = Math.max(1, Math.round(elx.clientWidth * dpr)), h = Math.max(1, Math.round(elx.clientHeight * dpr));
+  if (cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; return true; }
+  return false;
+}
+function sizePicker(){
+  if (pickMode === 'square'){ fitCanvas(svEl, svCanvas); fitCanvas(hueEl, hueCanvas); drawSV(); drawHue(); }
+  else if (pickMode === 'wheel'){ if (fitCanvas(wheelEl, wheelCanvas)) wheelRing = null; drawWheel(); }
+  else { if (fitCanvas(hlFieldEl, hlCanvas)) hlDrawnS = -1; fitCanvas(hlSatEl, hlSatCanvas); updateHL(true); }
+}
+// ホイール
+let wheelRing = null;
+function wheelGeom(){
+  const S = wheelEl.clientWidth, R = S / 2 - 2, rw = Math.max(12, S * .1), ri = R - rw, q = ri * Math.SQRT2 * .9;
+  return { S, c: S / 2, R, ri, q, x0: S / 2 - q / 2 };
+}
+function drawWheel(){
+  const G = wheelGeom(); if (!G.S) return;
+  const W = wheelCanvas.width, k = W / G.S, c = wheelCanvas.getContext('2d');
+  if (!wheelRing || wheelRing.width !== W){
+    wheelRing = mk(W, W);
+    const rc = wheelRing.getContext('2d'), img = rc.createImageData(W, W), d = img.data, cx = W / 2, R = G.R * k, ri = G.ri * k;
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++){
+      const dx = x + .5 - cx, dy = y + .5 - cx, r = Math.hypot(dx, dy);
+      if (r < ri - 1 || r > R + 1) continue;
+      let h = Math.atan2(dx, -dy) / (2 * Math.PI); if (h < 0) h += 1;
+      toRGB(h, 1, 1);
+      const o = (y * W + x) * 4; d[o] = RGB[0]; d[o + 1] = RGB[1]; d[o + 2] = RGB[2];
+      d[o + 3] = clamp(Math.min(r - (ri - 1), R + 1 - r), 0, 1) * 255;
+    }
+    rc.putImageData(img, 0, 0);
+  }
+  c.clearRect(0, 0, W, W); c.drawImage(wheelRing, 0, 0);
+  const x0 = G.x0 * k, q = G.q * k;
+  toRGB(hsv.h, 1, 1); c.fillStyle = `rgb(${RGB[0] | 0},${RGB[1] | 0},${RGB[2] | 0})`; c.fillRect(x0, x0, q, q);
+  let g = c.createLinearGradient(x0, 0, x0 + q, 0); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(x0, x0, q, q);
+  g = c.createLinearGradient(0, x0, 0, x0 + q); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,1)'); c.fillStyle = g; c.fillRect(x0, x0, q, q);
+  const hk = $('#wheelHueKnob'), sk = $('#wheelSvKnob'), mid = (G.R + G.ri) / 2, a = hsv.h * 2 * Math.PI;
+  hk.style.left = (G.c + Math.sin(a) * mid) + 'px'; hk.style.top = (G.c - Math.cos(a) * mid) + 'px';
+  sk.style.left = (G.x0 + hsv.s * G.q) + 'px'; sk.style.top = (G.x0 + (1 - hsv.v) * G.q) + 'px';
+}
+wheelEl.addEventListener('pointerdown', e => {
+  const G = wheelGeom(), r = wheelEl.getBoundingClientRect(), pos = ev => ({ x: ev.clientX - r.left, y: ev.clientY - r.top });
+  const p = pos(e), dist = Math.hypot(p.x - G.c, p.y - G.c), m = 8;
+  const mode = dist >= G.ri - 6 && dist <= G.R + 10 ? 'hue' : (p.x >= G.x0 - m && p.x <= G.x0 + G.q + m && p.y >= G.x0 - m && p.y <= G.x0 + G.q + m) ? 'sv' : null;
+  if (!mode) return;
+  wheelEl.setPointerCapture(e.pointerId);
+  const go = ev => {
+    const q = pos(ev);
+    if (mode === 'hue'){ let h = Math.atan2(q.x - G.c, -(q.y - G.c)) / (2 * Math.PI); if (h < 0) h += 1; setHSV(Math.min(h, .9999), hsv.s, hsv.v); }
+    else { hsv.s = clamp((q.x - G.x0) / G.q, 0, 1); hsv.v = 1 - clamp((q.y - G.x0) / G.q, 0, 1); toRGB(hsv.h, hsv.s, hsv.v); color = { r: RGB[0], g: RGB[1], b: RGB[2] }; syncColor(false); }
+  };
+  go(e);
+  const up = () => { wheelEl.removeEventListener('pointermove', go); wheelEl.removeEventListener('pointerup', up); wheelEl.removeEventListener('pointercancel', up); };
+  wheelEl.addEventListener('pointermove', go); wheelEl.addEventListener('pointerup', up); wheelEl.addEventListener('pointercancel', up);
+});
+// 色相×明るさ（横＝色相、縦＝明るさ、右の帯＝鮮やかさ）
+function rgb2hsl(r, g, b){
+  r /= 255; g /= 255; b /= 255;
+  const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+  let h = 0, s = 0;
+  if (d > 1e-6){
+    s = l > .5 ? d / (2 - mx - mn) : d / (mx + mn);
+    if (mx === r) h = ((g - b) / d) % 6; else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+    h /= 6; if (h < 0) h += 1;
+  }
+  return [h, s, l];
+}
+function hsl2rgb(h, s, l){
+  const q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+  const f = t => { t = ((t % 1) + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < .5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
+  return { r: f(h + 1 / 3) * 255, g: f(h) * 255, b: f(h - 1 / 3) * 255 };
+}
+let hlS = 1, hlH = 0, hlL = .5, hlDrawnS = -1, hlDragging = false;
+function drawHLField(){
+  const W = hlCanvas.width, H = hlCanvas.height; if (W < 2 || H < 2) return;
+  const c = hlCanvas.getContext('2d'), img = c.createImageData(W, H), d = img.data;
+  for (let y = 0; y < H; y++){
+    const l = 1 - y / (H - 1);
+    for (let x = 0; x < W; x++){ const col = hsl2rgb(x / W, hlS, l), o = (y * W + x) * 4; d[o] = col.r; d[o + 1] = col.g; d[o + 2] = col.b; d[o + 3] = 255; }
+  }
+  c.putImageData(img, 0, 0); hlDrawnS = hlS;
+}
+function drawHLSat(){
+  const W = hlSatCanvas.width, H = hlSatCanvas.height; if (W < 1 || H < 2) return;
+  const c = hlSatCanvas.getContext('2d');
+  for (let y = 0; y < H; y++){ const col = hsl2rgb(hlH, 1 - y / (H - 1), hlL); c.fillStyle = `rgb(${col.r | 0},${col.g | 0},${col.b | 0})`; c.fillRect(0, y, W, 1); }
+}
+function updateHL(force){
+  if (!hlDragging){
+    const [h0, s0, l0] = rgb2hsl(color.r, color.g, color.b), defined = s0 > 1e-3 && l0 > 1e-3 && l0 < .999;
+    hlL = l0; hlH = defined ? h0 : hsv.h; if (defined) hlS = s0;
+  }
+  if (force || Math.abs(hlDrawnS - hlS) > .003) drawHLField();
+  drawHLSat();
+  const k = $('#hlKnob'); k.style.left = (hlH * 100) + '%'; k.style.top = ((1 - hlL) * 100) + '%'; k.style.background = toHex(color);
+  $('#hlSatKnob').style.top = ((1 - hlS) * 100) + '%';
+}
+function setFromHL(){ const c = hsl2rgb(hlH, hlS, hlL); color = { r: c.r, g: c.g, b: c.b }; toHSV(c.r, c.g, c.b); hsv = { h: hlH, s: HSV[1], v: HSV[2] }; syncColor(false); }
+function dragNorm(elx, onMove){
+  elx.addEventListener('pointerdown', e => {
+    elx.setPointerCapture(e.pointerId); hlDragging = true;
+    const go = ev => { const r = elx.getBoundingClientRect(); onMove(clamp((ev.clientX - r.left) / r.width, 0, 1), clamp((ev.clientY - r.top) / r.height, 0, 1)); };
+    go(e);
+    const up = () => { hlDragging = false; elx.removeEventListener('pointermove', go); elx.removeEventListener('pointerup', up); elx.removeEventListener('pointercancel', up); };
+    elx.addEventListener('pointermove', go); elx.addEventListener('pointerup', up); elx.addEventListener('pointercancel', up);
+  });
+}
+dragNorm(hlFieldEl, (x, y) => { hlH = Math.min(x, .9999); hlL = 1 - y; setFromHL(); });
+dragNorm(hlSatEl, (x, y) => { hlS = 1 - y; setFromHL(); });
+// --- スウォッチ（複数のリスト。ASE・ACO・GPL で書き出し・読み込み） ---
+const DEFAULT_SWATCHES = ['#1B1B1D', '#F2EFE8', '#8C8C8A', '#C8553D', '#E9B44C', '#F2D27A', '#2E5E4E', '#6A994E', '#3D55E0', '#2C4A6B', '#7A4E2D', '#B07BAC'];
+const PAL_KEY = 'kakoi.palettes', PAL_MAX = 256;
+const palUid = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+let palettes = (() => {
+  try {
+    const o = JSON.parse(localStorage.getItem(PAL_KEY) || 'null');
+    if (o && Array.isArray(o.list) && o.list.length){
+      o.list = o.list.filter(p => p && Array.isArray(p.colors)).map(p => ({ id: String(p.id || palUid()), name: String(p.name || 'リスト'), colors: p.colors.filter(c => c && parseHex(c.hex)).map(c => ({ hex: toHex(parseHex(c.hex)).toUpperCase(), name: String(c.name || '') })) }));
+      if (o.list.length){ if (!o.list.some(p => p.id === o.active)) o.active = o.list[0].id; return o; }
+    }
+  } catch (e) {}
+  let cols = DEFAULT_SWATCHES;
+  try { const a = JSON.parse(localStorage.getItem('kakoi.swatches') || 'null'); if (Array.isArray(a)) cols = a.filter(h => parseHex(h)); } catch (e) {}
+  const id = palUid();
+  return { active: id, list: [{ id, name: 'マイスウォッチ', colors: cols.map(h => ({ hex: h.toUpperCase(), name: '' })) }] };
+})();
+const curPal = () => palettes.list.find(p => p.id === palettes.active) || palettes.list[0];
+function savePalettes(){ try { localStorage.setItem(PAL_KEY, JSON.stringify(palettes)); } catch (e) {} }
+function uniquePalName(n){ n = (n || 'リスト').trim().slice(0, 60) || 'リスト'; let s = n, i = 2; while (palettes.list.some(p => p.name === s)) s = `${n} ${i++}`; return s; }
+function removeSwatch(i){ const p = curPal(); p.colors.splice(i, 1); savePalettes(); renderSwatches(); toast('スウォッチから外しました'); }
+function renderSwatches(){
+  const sel = $('#palSel'); sel.textContent = '';
+  for (const p of palettes.list){ const o = el('option', null, `${p.name}（${p.colors.length}）`); o.value = p.id; sel.append(o); }
+  sel.value = curPal().id;
+  const box = $('#swatches'); box.textContent = '';
+  const p = curPal();
+  if (!p.colors.length){ box.append(el('span', 'empty', '「＋」で今の色をこのリストに登録できます')); return; }
+  p.colors.forEach((c, i) => {
+    const b = el('button'); b.type = 'button'; b.style.background = c.hex;
+    const label = (c.name && c.name !== c.hex ? c.name + ' ' : '') + c.hex.toUpperCase();
+    b.title = `${label}（Option+クリック・右クリック・長押しで外す）`; b.setAttribute('aria-label', 'スウォッチ ' + label);
+    let lp = 0, longDone = false;
+    b.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse'){ longDone = false; lp = setTimeout(() => { longDone = true; removeSwatch(i); }, 600); } });
+    const cancel = () => clearTimeout(lp);
+    b.addEventListener('pointerup', cancel); b.addEventListener('pointerleave', cancel); b.addEventListener('pointercancel', cancel);
+    b.addEventListener('click', e => { if (longDone) return; if (e.altKey){ removeSwatch(i); return; } setColor(parseHex(c.hex)); });
+    b.addEventListener('contextmenu', e => { e.preventDefault(); removeSwatch(i); });
+    box.append(b);
+  });
+}
+$('#palSel').addEventListener('change', e => { palettes.active = e.target.value; savePalettes(); renderSwatches(); });
+$('#swAdd').addEventListener('click', () => {
+  const p = curPal(), h = toHex(color).toUpperCase();
+  if (p.colors.some(c => c.hex === h)){ toast('この色はもう登録されています'); return; }
+  if (p.colors.length >= PAL_MAX){ toast(`1つのリストには${PAL_MAX}色まで登録できます`); return; }
+  p.colors.push({ hex: h, name: '' }); savePalettes(); renderSwatches();
+});
+// 書き出し
+function f32be(w, v){ const b = new Uint8Array(4); new DataView(b.buffer).setFloat32(0, v); w.bytes(b); }
+function buildASE(pals){
+  const w = new BW(), nm = s => (s || '').slice(0, 120);
+  w.sig('ASEF'); w.u16(1); w.u16(0);
+  w.u32(pals.reduce((n, p) => n + p.colors.length + 2, 0));
+  const str = s => { s = nm(s); w.u16(s.length + 1); for (let i = 0; i < s.length; i++) w.u16(s.charCodeAt(i)); w.u16(0); };
+  const strLen = s => 2 + (nm(s).length + 1) * 2;
+  for (const p of pals){
+    w.u16(0xC001); w.u32(strLen(p.name)); str(p.name);
+    for (const c of p.colors){
+      const rgb = parseHex(c.hex), name = c.name || c.hex.toUpperCase();
+      w.u16(0x0001); w.u32(strLen(name) + 4 + 12 + 2); str(name);
+      w.sig('RGB '); f32be(w, rgb.r / 255); f32be(w, rgb.g / 255); f32be(w, rgb.b / 255); w.u16(2);
+    }
+    w.u16(0xC002); w.u32(0);
+  }
+  return w.out();
+}
+function buildACO(p){
+  const w = new BW(), cols = p.colors.slice(0, 65535);
+  const col = c => { const rgb = parseHex(c.hex); w.u16(0); w.u16(rgb.r * 257); w.u16(rgb.g * 257); w.u16(rgb.b * 257); w.u16(0); };
+  w.u16(1); w.u16(cols.length); for (const c of cols) col(c);
+  w.u16(2); w.u16(cols.length);
+  for (const c of cols){ col(c); const s = (c.name || c.hex.toUpperCase()).slice(0, 120); w.u16(0); w.u16(s.length + 1); for (let i = 0; i < s.length; i++) w.u16(s.charCodeAt(i)); w.u16(0); }
+  return w.out();
+}
+function buildGPL(p){
+  const lines = ['GIMP Palette', `Name: ${p.name}`, 'Columns: 10', '#'];
+  for (const c of p.colors){ const rgb = parseHex(c.hex); lines.push(`${String(rgb.r).padStart(3)} ${String(rgb.g).padStart(3)} ${String(rgb.b).padStart(3)}\t${c.name || c.hex.toUpperCase()}`); }
+  return new TextEncoder().encode(lines.join('\n') + '\n');
+}
+async function exportPalette(kind, all){
+  const p = curPal(), pals = all ? palettes.list.filter(x => x.colors.length) : [p];
+  if (!pals.length || !pals[0].colors.length){ toast('書き出す色がありません'); return; }
+  const bytes = kind === 'ase' ? buildASE(pals) : kind === 'aco' ? buildACO(p) : buildGPL(p);
+  const base = (all ? 'KAKOI_スウォッチ' : p.name).replace(/[\\/:*?"<>|]/g, '_').slice(0, 60) || 'swatches';
+  try {
+    const r = await saveBlobAs(new Blob([bytes], { type: FTYPES[kind].mime }), base, kind);
+    if (r.ok) toast(r.zipped ? `ZIPに入れて保存しました。展開すると .${kind} が出てきます` : `スウォッチを .${kind} で書き出しました`);
+  } catch (err){ toast('書き出せませんでした：' + ((err && err.message) || '')); }
+}
+// 読み込み
+function labToRgb(L, a, b){
+  let y = (L + 16) / 116, x = a / 500 + y, z = y - b / 200;
+  const f = t => t ** 3 > .008856 ? t ** 3 : (t - 16 / 116) / 7.787;
+  x = .96422 * f(x); y = f(y); z = .82521 * f(z);
+  const X = .9555766 * x - .0230393 * y + .0631636 * z, Y = -.0282895 * x + 1.0099416 * y + .0210077 * z, Z = .0122982 * x - .0204830 * y + 1.3299098 * z;
+  return { r: l2s(3.2404542 * X - 1.5371385 * Y - .4985314 * Z), g: l2s(-.9692660 * X + 1.8760108 * Y + .0415560 * Z), b: l2s(.0556434 * X - .2040259 * Y + 1.0572252 * Z) };
+}
+const swFrom = (rgb, name) => ({ hex: toHex(rgb).toUpperCase(), name: name || '' });
+function parseASE(u8){
+  const r = new BR(u8);
+  if (r.sig() !== 'ASEF') throw new Error('ASE ファイルではありません');
+  r.u16(); r.u16();
+  const n = r.u32(), groups = [], loose = [];
+  let cur = null;
+  const str = () => { const len = r.u16(); let s = ''; for (let j = 0; j < len; j++){ const c = r.u16(); if (c) s += String.fromCharCode(c); } return s; };
+  const f = () => { const v = r.dv.getFloat32(r.p); r.p += 4; return v; };
+  for (let i = 0; i < n && r.p + 6 <= u8.length; i++){
+    const type = r.u16(), len = r.u32(), end = r.p + len;
+    if (type === 0xC001){ cur = { name: str(), colors: [] }; groups.push(cur); }
+    else if (type === 0xC002) cur = null;
+    else if (type === 0x0001){
+      const name = str(), model = r.sig();
+      let rgb = null;
+      if (model === 'RGB ') rgb = { r: f() * 255, g: f() * 255, b: f() * 255 };
+      else if (model === 'CMYK'){ const c = f(), m = f(), y = f(), k = f(); rgb = { r: 255 * (1 - c) * (1 - k), g: 255 * (1 - m) * (1 - k), b: 255 * (1 - y) * (1 - k) }; }
+      else if (model === 'Gray'){ const g = f() * 255; rgb = { r: g, g, b: g }; }
+      else if (model === 'LAB '){ rgb = labToRgb(f() * 100, f(), f()); }
+      if (rgb) (cur ? cur.colors : loose).push(swFrom(rgb, name));
+    }
+    r.p = end;
+  }
+  return { groups, loose };
+}
+function acoColor(sp, w, x, y, z){
+  if (sp === 0) return { r: w / 257, g: x / 257, b: y / 257 };
+  if (sp === 1){ toRGB(w / 65536, x / 65535, y / 65535); return { r: RGB[0], g: RGB[1], b: RGB[2] }; }
+  if (sp === 2){ const c = 1 - w / 65535, m = 1 - x / 65535, yy = 1 - y / 65535, k = 1 - z / 65535; return { r: 255 * (1 - c) * (1 - k), g: 255 * (1 - m) * (1 - k), b: 255 * (1 - yy) * (1 - k) }; }
+  if (sp === 7){ const s16 = v => v > 32767 ? v - 65536 : v; return labToRgb(w / 100, s16(x) / 100, s16(y) / 100); }
+  if (sp === 8){ const g = 255 * (1 - w / 10000); return { r: g, g, b: g }; }
+  return null;
+}
+function parseACO(u8){
+  const r = new BR(u8), read = () => acoColor(r.u16(), r.u16(), r.u16(), r.u16(), r.u16());
+  let ver = r.u16(), n = r.u16(), out = [];
+  if (ver === 1){
+    for (let i = 0; i < n; i++){ const c = read(); if (c) out.push(swFrom(c)); }
+    if (r.p + 4 <= u8.length){ ver = r.u16(); n = r.u16(); if (ver === 2) out = []; }
+  }
+  if (ver === 2){
+    for (let i = 0; i < n && r.p + 14 <= u8.length; i++){
+      const c = read(); r.u16(); const len = r.u16(); let s = '';
+      for (let j = 0; j < len; j++){ const ch = r.u16(); if (ch) s += String.fromCharCode(ch); }
+      if (c) out.push(swFrom(c, s));
+    }
+  }
+  return out;
+}
+function parseGPL(text){
+  let name = ''; const colors = [];
+  for (const line of text.split(/\r?\n/)){
+    const m = line.match(/^\s*Name:\s*(.*)$/i); if (m){ name = m[1].trim(); continue; }
+    const c = line.match(/^\s*(\d{1,3})\s+(\d{1,3})\s+(\d{1,3})\s*(.*)$/);
+    if (c) colors.push(swFrom({ r: clamp(+c[1], 0, 255), g: clamp(+c[2], 0, 255), b: clamp(+c[3], 0, 255) }, (c[4] || '').trim()));
+  }
+  return { name, colors };
+}
+async function importPaletteFile(f){
+  const ext = ((f.name.match(/\.([^.]+)$/) || [])[1] || '').toLowerCase(), base = f.name.replace(/\.[^.]+$/, '');
+  try {
+    const u8 = new Uint8Array(await f.arrayBuffer());
+    let lists = [];
+    if (ext === 'ase'){ const r = parseASE(u8); lists = r.groups.slice(); if (r.loose.length) lists.push({ name: base, colors: r.loose }); }
+    else if (ext === 'aco') lists = [{ name: base, colors: parseACO(u8) }];
+    else if (ext === 'gpl'){ const r = parseGPL(new TextDecoder().decode(u8)); lists = [{ name: r.name || base, colors: r.colors }]; }
+    else throw new Error('対応していない形式です');
+    lists = lists.filter(l => l.colors.length);
+    if (!lists.length) throw new Error('色が見つかりませんでした');
+    let first = null, total = 0;
+    for (const l of lists){ const id = palUid(); first = first || id; total += Math.min(l.colors.length, PAL_MAX); palettes.list.push({ id, name: uniquePalName(l.name || base), colors: l.colors.slice(0, PAL_MAX) }); }
+    palettes.active = first; savePalettes(); renderSwatches();
+    toast(lists.length === 1 ? `「${curPal().name}」を読み込みました（${total}色）` : `${lists.length}個のリストを読み込みました（${total}色）`);
+  } catch (err){ toast('スウォッチを読み込めませんでした：' + ((err && err.message) || '')); }
+}
+$('#filePalette').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) importPaletteFile(f); });
+// リストの管理
+const PAL_ACTS = {
+  async new(){ const n = await promptBox('新しいリストの名前', uniquePalName('リスト')); if (n == null) return; const id = palUid(); palettes.list.push({ id, name: uniquePalName(n), colors: [] }); palettes.active = id; savePalettes(); renderSwatches(); },
+  async rename(){ const p = curPal(), n = await promptBox('リストの名前', p.name); if (n == null || !n.trim() || n.trim() === p.name) return; p.name = uniquePalName(n); savePalettes(); renderSwatches(); },
+  dup(){ const p = curPal(), id = palUid(); palettes.list.splice(palettes.list.indexOf(p) + 1, 0, { id, name: uniquePalName(p.name + ' のコピー'), colors: p.colors.map(c => ({ ...c })) }); palettes.active = id; savePalettes(); renderSwatches(); },
+  async delete(){
+    if (palettes.list.length <= 1){ toast('最後のリストは削除できません'); return; }
+    const p = curPal();
+    if (!(await confirmBox(`スウォッチのリスト「${p.name}」（${p.colors.length}色）を削除します。`, '削除'))) return;
+    const i = palettes.list.indexOf(p); palettes.list.splice(i, 1); palettes.active = palettes.list[Math.max(0, i - 1)].id; savePalettes(); renderSwatches();
+  },
+  ase(){ exportPalette('ase', false); }, aco(){ exportPalette('aco', false); }, gpl(){ exportPalette('gpl', false); }, aseAll(){ exportPalette('ase', true); },
+  import(){ $('#filePalette').click(); },
+};
+for (const b of $('#palMenu').querySelectorAll('button')) b.addEventListener('click', () => { closePops(); PAL_ACTS[b.dataset.act](); });
+bindPop('#palMenuBtn', '#palMenu');
+
 $('#hexInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); e.target.blur(); } });
 $('#hexInput').addEventListener('change', e => { const c = parseHex(e.target.value); if (c) setColor(c); else { e.target.value = toHex(color).toUpperCase(); toast('#RRGGBB の形で入力してください'); } });
 $('#subSwatch').addEventListener('click', swapColors);
@@ -2159,8 +2813,8 @@ function renameLayer(L){
 const layerAct = fn => () => { if (busy()) return; settle(); fn(); };
 $('#lyAdd').addEventListener('click', layerAct(() => structChange(() => { const L = makeLayer(); updateThumb(L); layers.splice(layers.indexOf(active) + 1, 0, L); active = L; })));
 $('#lyDup').addEventListener('click', layerAct(() => structChange(() => {
-  const A = active, L = makeLayer(A.name + ' のコピー');
-  L.ctx.drawImage(A.canvas, 0, 0);
+  const A = active, L = makeLayer(A.name + ' のコピー', true);
+  for (const [k, c] of A.cels){ const n = newCel(); n.ctx.drawImage(c.canvas, 0, 0); L.cels.set(k, n); }
   Object.assign(L, { visible: A.visible, opacity: A.opacity, blend: A.blend, lock: A.lock, clip: A.clip });
   updateThumb(L); layers.splice(layers.indexOf(A) + 1, 0, L); active = L;
 })));
@@ -2179,20 +2833,26 @@ $('#lyDown').addEventListener('click', layerAct(() => moveLayer(-1)));
 $('#lyMerge').addEventListener('click', layerAct(() => {
   const i = layers.indexOf(active); if (i <= 0) return;
   const A = active, B = layers[i - 1];
-  const bef = B.ctx.getImageData(0, 0, DW, DH);
-  if (A.visible){
-    let src = A.canvas;
-    if (A.clip){ clipCtx.globalCompositeOperation = 'copy'; clipCtx.drawImage(A.canvas, 0, 0); clipCtx.globalCompositeOperation = 'destination-in'; clipCtx.drawImage(B.canvas, 0, 0); clipCtx.globalCompositeOperation = 'source-over'; src = clipBuf; }
-    B.ctx.globalAlpha = A.opacity; B.ctx.globalCompositeOperation = A.blend;
-    B.ctx.drawImage(src, 0, 0);
-    B.ctx.globalAlpha = 1; B.ctx.globalCompositeOperation = 'source-over';
-  }
-  const px = { kind: 'px', L: B, x: 0, y: 0, before: bef, after: B.ctx.getImageData(0, 0, DW, DH) };
-  const sb = snap(); layers.splice(i, 1); active = B;
-  pushHistory({ kind: 'multi', list: [px, { kind: 'struct', before: sb, after: snap() }] });
-  updateThumb(B); renderLayers(); requestRender(true);
+  structChange(() => {
+    const out = new Map();
+    for (const k of [...new Set([...A.cels.keys(), ...B.cels.keys()])].sort((x, y) => x - y)){
+      const cel = newCel(), bc = heldCel(B, k), ac = heldCel(A, k);
+      if (bc) cel.ctx.drawImage(bc.canvas, 0, 0);
+      if (ac && A.visible && !(A.clip && !bc)){
+        let src = ac.canvas;
+        if (A.clip){ clipCtx.globalCompositeOperation = 'copy'; clipCtx.drawImage(ac.canvas, 0, 0); clipCtx.globalCompositeOperation = 'destination-in'; clipCtx.drawImage(bc.canvas, 0, 0); clipCtx.globalCompositeOperation = 'source-over'; src = clipBuf; }
+        cel.ctx.globalAlpha = A.opacity; cel.ctx.globalCompositeOperation = A.blend;
+        cel.ctx.drawImage(src, 0, 0);
+        cel.ctx.globalAlpha = 1; cel.ctx.globalCompositeOperation = 'source-over';
+      }
+      out.set(k, cel);
+    }
+    B.cels = out; layers.splice(i, 1); active = B;
+  });
+  updateThumb(B);
 }));
 $('#lyClear').addEventListener('click', layerAct(() => {
+  if (!heldCel(active)) return;
   const L = active, bef = L.ctx.getImageData(0, 0, DW, DH);
   L.ctx.clearRect(0, 0, DW, DH);
   pushHistory({ kind: 'px', L, x: 0, y: 0, before: bef, after: L.ctx.getImageData(0, 0, DW, DH) });
@@ -2587,11 +3247,16 @@ async function openPsdViaLibrary(u8, name){
 // --- KAKOI 形式（このアプリ専用。レイヤーを PNG のまま ZIP にまとめたもの） ---
 async function buildKakoi(){
   compose(); qCompose = false;
-  const files = [], meta = { format: 'kakoi', version: 1, width: DW, height: DH, name: docName, active: layers.indexOf(active), colors: { main: toHex(color), sub: toHex(sub) }, layers: [] };
+  const files = [], meta = { format: 'kakoi', version: 2, width: DW, height: DH, name: docName, active: layers.indexOf(active), colors: { main: toHex(color), sub: toHex(sub) }, anim: { frames: anim.frames, fps: anim.fps, loop: anim.loop }, layers: [] };
   for (let i = 0; i < layers.length; i++){
-    const L = layers[i], path = `layers/${String(i + 1).padStart(3, '0')}.png`;
-    files.push({ name: path, data: await blobBytes(await canvasBlob(L.canvas)), store: true });
-    meta.layers.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, file: path });
+    const L = layers[i], cels = [];
+    for (const k of sortedKeys(L)){
+      const path = `layers/${String(i + 1).padStart(3, '0')}/${String(k).padStart(4, '0')}.png`;
+      files.push({ name: path, data: await celBytes(L.cels.get(k)), store: true });
+      cels.push({ frame: k, file: path });
+    }
+    const first = cels.find(c => c.frame === 0) || cels[0];
+    meta.layers.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, file: first ? first.file : null, cels });
   }
   files.push({ name: 'preview.png', data: await blobBytes(await canvasBlob(comp)), store: true });
   files.unshift({ name: 'kakoi.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 1)) });
@@ -2604,13 +3269,18 @@ async function openKakoiEntries(ents, name){
   if (meta.format !== 'kakoi' || !Array.isArray(meta.layers)) throw new Error('KAKOI ファイルの中身が読めません');
   const W = meta.width | 0, H = meta.height | 0;
   if (W < 1 || H < 1 || W > 3200 || H > 3200 || W * H > 6.6e6) throw new Error('キャンバスの大きさが読み取れません');
-  const bitmaps = [];
-  for (const info of meta.layers){ const e = ents.find(x => x.name === info.file); bitmaps.push(e ? await loadImage(new Blob([await e.data()], { type: 'image/png' })) : null); }
+  const celLists = [];
+  for (const info of meta.layers){
+    const list = Array.isArray(info.cels) ? info.cels : (info.file ? [{ frame: 0, file: info.file }] : []), out = [];
+    for (const c of list){ const e = ents.find(x => x.name === c.file); if (e) out.push({ frame: Math.max(0, c.frame | 0), bmp: await loadImage(new Blob([await e.data()], { type: 'image/png' })) }); }
+    celLists.push(out);
+  }
   resetDoc(W, H);
+  if (meta.anim){ anim.frames = clamp(meta.anim.frames | 0 || 24, 1, 1200); anim.fps = clamp(+meta.anim.fps || 12, 1, 120); if (typeof meta.anim.loop === 'boolean') anim.loop = meta.anim.loop; }
   const ls = meta.layers.map((info, i) => {
-    const L = makeLayer(String(info.name || `レイヤー ${i + 1}`));
+    const L = makeLayer(String(info.name || `レイヤー ${i + 1}`), true);
     Object.assign(L, { visible: info.visible !== false, opacity: info.opacity == null ? 1 : clamp(+info.opacity, 0, 1), blend: BLEND_NAME[info.blend] ? info.blend : 'source-over', lock: !!info.lock, clip: !!info.clip && i > 0 });
-    if (bitmaps[i]) L.ctx.drawImage(bitmaps[i], 0, 0);
+    for (const c of celLists[i]){ const cel = newCel(); cel.ctx.drawImage(c.bmp, 0, 0); L.cels.set(c.frame, cel); }
     return L;
   });
   nameSeq = ls.length;
@@ -2624,10 +3294,15 @@ async function openKakoiEntries(ents, name){
 // --- 保存先の選択と書き込み ---
 let downloadsP = null;
 try { if (window.claude && typeof window.claude.use === 'function') downloadsP = window.claude.use('downloads').catch(() => null); } catch (e) { downloadsP = null; }
+const VIEWER_EXT = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'zip', 'txt', 'json', 'csv', 'pdf', 'svg']);
 const FTYPES = {
   kakoi: { ext: 'kakoi', mime: 'application/x-kakoi', desc: 'KAKOI ファイル' },
   psd: { ext: 'psd', mime: 'image/vnd.adobe.photoshop', desc: 'Photoshop ファイル' },
   png: { ext: 'png', mime: 'image/png', desc: 'PNG 画像' },
+  zip: { ext: 'zip', mime: 'application/zip', desc: 'ZIP' },
+  ase: { ext: 'ase', mime: 'application/octet-stream', desc: 'Adobe スウォッチ交換ファイル' },
+  aco: { ext: 'aco', mime: 'application/octet-stream', desc: 'Photoshop スウォッチ' },
+  gpl: { ext: 'gpl', mime: 'text/plain', desc: 'GIMP・Krita パレット' },
 };
 let fileHandle = null, savingFile = false;
 function stamp(){ const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`; }
@@ -2648,9 +3323,10 @@ async function saveBlobAs(blob, base, kind){
   const api = downloadsP ? await downloadsP : null;
   if (api){
     let filename = `${base}.${T.ext}`, data = blob;
+    let zipped = false;
     if (kind === 'kakoi') filename += '.zip';
-    if (kind === 'psd'){ filename = `${base}.zip`; data = await makeZip([{ name: `${base}.psd`, data: await blobBytes(blob) }]); }
-    try { await api.save({ filename, data }); return { ok: true, viewer: true }; }
+    else if (!VIEWER_EXT.has(T.ext)){ filename = `${base}.zip`; data = await makeZip([{ name: `${base}.${T.ext}`, data: await blobBytes(blob) }]); zipped = true; }
+    try { await api.save({ filename, data }); return { ok: true, viewer: true, zipped }; }
     catch (err){ if (!err || err.code !== 'declined') toast('保存できませんでした：' + ((err && err.message) || '不明なエラー')); return { ok: false }; }
   }
   if (typeof window.showSaveFilePicker === 'function'){
@@ -2698,8 +3374,138 @@ function exportPNG(){
   });
 }
 
+// --- 連番書き出し（コンポジット用） ---
+const seqState = (() => {
+  const d = { what: 'both', scale: 1, start: 1, digits: 4, hidden: false };
+  try { return Object.assign(d, JSON.parse(localStorage.getItem('kakoi.seq') || '{}')); } catch (e){ return d; }
+})();
+const safeName = s => (s || '').trim().replace(/[\\/:*?"<>|\s]+/g, '_').slice(0, 40) || 'layer';
+function syncSeqDialog(){
+  for (const b of $('#seqWhat').children) b.setAttribute('aria-pressed', String(b.dataset.v === seqState.what));
+  for (const b of $('#seqScale').children) b.setAttribute('aria-pressed', String(+b.dataset.v === seqState.scale));
+  $('#seqStart').value = seqState.start; $('#seqDigits').value = seqState.digits; $('#seqHidden').checked = seqState.hidden;
+  const nm = baseFileName(), num = String(seqState.start).padStart(seqState.digits, '0');
+  const ex = [];
+  if (seqState.what !== 'layers') ex.push(`${nm}_${num}.png`);
+  if (seqState.what !== 'comp') ex.push(`${nm}_${safeName(active ? active.name : 'layer')}/${nm}_${safeName(active ? active.name : 'layer')}_${num}.png`);
+  $('#seqExample').textContent = '例：' + ex.join('　／　');
+  const W2 = Math.round(DW * seqState.scale), H2 = Math.round(DH * seqState.scale);
+  $('#seqSize').textContent = `${W2} × ${H2} px`;
+}
+function openSeqDialog(){
+  if (busy()) return;
+  stopPlay(); settle();
+  $('#seqFrom').value = 1; $('#seqTo').value = anim.frames; $('#seqFrom').max = $('#seqTo').max = anim.frames;
+  $('#seqFps').textContent = `${anim.fps} fps`;
+  syncSeqDialog();
+  $('#seqModal').classList.add('open'); $('#seqOk').focus();
+}
+for (const b of $('#seqWhat').children) b.addEventListener('click', () => { seqState.what = b.dataset.v; syncSeqDialog(); });
+for (const b of $('#seqScale').children) b.addEventListener('click', () => { seqState.scale = +b.dataset.v; syncSeqDialog(); });
+$('#seqStart').addEventListener('input', e => { seqState.start = clamp(Math.round(+e.target.value) || 0, 0, 99999); syncSeqDialog(); });
+$('#seqDigits').addEventListener('input', e => { seqState.digits = clamp(Math.round(+e.target.value) || 4, 1, 8); syncSeqDialog(); });
+$('#seqHidden').addEventListener('change', e => { seqState.hidden = e.target.checked; });
+$('#seqCancel').addEventListener('click', closeModals);
+$('#seqOk').addEventListener('click', async () => {
+  const from = clamp(Math.round(+$('#seqFrom').value) || 1, 1, anim.frames) - 1, to = clamp(Math.round(+$('#seqTo').value) || anim.frames, from + 1, anim.frames) - 1;
+  try { localStorage.setItem('kakoi.seq', JSON.stringify(seqState)); } catch (e) {}
+  closeModals();
+  // 保存先フォルダは、押した直後に聞く（Chrome・Edge で直接開いているとき）
+  let dir = null;
+  const api = downloadsP ? await downloadsP : null;
+  if (!api && typeof window.showDirectoryPicker === 'function'){
+    try { dir = await window.showDirectoryPicker({ mode: 'readwrite' }); }
+    catch (err){ if (err && err.name === 'AbortError') return; dir = null; }
+  }
+  await exportSequence({ ...seqState, from, to }, dir);
+});
+function clipBaseOf(i){ for (let j = i - 1; j >= 0; j--) if (!layers[j].clip) return layers[j]; return null; }
+async function exportSequence(o, dir){
+  if (busy() || savingFile) return;
+  savingFile = true;
+  const keep = anim.cur, name = baseFileName(), pad = n => String(n).padStart(o.digits, '0');
+  const W2 = Math.max(1, Math.round(DW * o.scale)), H2 = Math.max(1, Math.round(DH * o.scale));
+  const out = mk(W2, H2), oc = out.getContext('2d'); oc.imageSmoothingQuality = 'high';
+  const enc = async src => { oc.clearRect(0, 0, W2, H2); oc.drawImage(src, 0, 0, W2, H2); return blobBytes(await canvasBlob(out)); };
+  const files = [], count = o.to - o.from + 1;
+  try {
+    if (o.what !== 'layers'){
+      let lastSig = null, last = null;
+      for (let f = o.from; f <= o.to; f++){
+        anim.cur = f;
+        const sig = layers.map(L => L.visible ? heldKey(L, f) : 'x').join(',');
+        if (sig !== lastSig){ compose(); last = await enc(comp); lastSig = sig; }
+        files.push({ name: `${name}_${pad(o.start + f - o.from)}.png`, data: last, store: true });
+        setStatus(`書き出し中… 合成 ${f - o.from + 1} / ${count}`);
+      }
+    }
+    const layerNotes = [];
+    if (o.what !== 'comp'){
+      const used = new Set();
+      for (let li = 0; li < layers.length; li++){
+        const L = layers[li];
+        if (!L.visible && !o.hidden) continue;
+        let ln = safeName(L.name); while (used.has(ln)) ln += '_2'; used.add(ln);
+        const folder = `${name}_${ln}`, base = L.clip ? clipBaseOf(li) : null, cache = new Map();
+        layerNotes.push(`  ${folder}　${BLEND_NAME[L.blend] || L.blend}　不透明度 ${Math.round(L.opacity * 100)}%` + (base ? `　（「${base.name}」でクリッピング済み）` : '') + (L.visible ? '' : '　非表示'));
+        for (let f = o.from; f <= o.to; f++){
+          const k = heldKey(L, f), bk = base ? heldKey(base, f) : -2, key = k + '|' + bk;
+          if (!cache.has(key)){
+            let src = k >= 0 ? L.cels.get(k).canvas : EMPTY;
+            if (base && k >= 0){
+              clipCtx.globalAlpha = 1; clipCtx.globalCompositeOperation = 'copy'; clipCtx.drawImage(src, 0, 0);
+              if (bk >= 0){ clipCtx.globalCompositeOperation = 'destination-in'; clipCtx.drawImage(base.cels.get(bk).canvas, 0, 0); }
+              else clipCtx.clearRect(0, 0, DW, DH);
+              clipCtx.globalCompositeOperation = 'source-over'; src = clipBuf;
+            }
+            cache.set(key, await enc(src));
+          }
+          files.push({ name: `${folder}/${folder}_${pad(o.start + f - o.from)}.png`, data: cache.get(key), store: true });
+        }
+        setStatus(`書き出し中… レイヤー ${li + 1} / ${layers.length}`);
+      }
+    }
+    const info = [
+      'KAKOI 連番書き出し', '',
+      `作品名：${docName}`,
+      `大きさ：${W2} × ${H2} px（書き出し倍率 ${Math.round(o.scale * 100)}%）`,
+      `フレームレート：${anim.fps} fps`,
+      `範囲：${o.from + 1}〜${o.to + 1} コマ目（${count}コマ・${(count / anim.fps).toFixed(2)}秒）`,
+      `ファイル番号：${pad(o.start)} から`,
+      '',
+      ...(o.what !== 'layers' ? ['合成した絵：', `  ${name}_${pad(o.start)}.png …`, ''] : []),
+      ...(o.what !== 'comp' ? ['レイヤーごとの絵（下から順。合成モード・不透明度はかけていない素の絵です）：', ...layerNotes, ''] : []),
+      '読み込み方：',
+      `  After Effects … 「ファイル」→「読み込み」で最初の PNG を選び、「PNG シーケンス」にチェック。読み込んだ素材を「フッテージを変換」で ${anim.fps} fps にします。`,
+      '  DaVinci Resolve … メディアプールにフォルダごと読み込むと、連番として 1 本の素材になります。フレームレートはプロジェクト設定に合わせて解釈されます。',
+      '  レイヤーごとの絵は、上の一覧の合成モード・不透明度を合成ソフト側で設定すると、KAKOI と同じ見た目になります。',
+    ].join('\n');
+    files.push({ name: `${name}_読み込み設定.txt`, data: new TextEncoder().encode(info), store: true });
+    setStatus('書き出し中… ファイルを保存しています');
+    if (dir){
+      const root = await dir.getDirectoryHandle(`${name}_連番`, { create: true });
+      for (const f of files){
+        const parts = f.name.split('/'); let d = root;
+        for (const part of parts.slice(0, -1)) d = await d.getDirectoryHandle(part, { create: true });
+        const fh = await d.getFileHandle(parts[parts.length - 1], { create: true });
+        const ws = await fh.createWritable(); await ws.write(f.data); await ws.close();
+      }
+      toast(`「${name}_連番」フォルダに ${files.length - 1} 枚書き出しました`);
+    } else {
+      const zip = await makeZip(files);
+      const r = await saveBlobAs(zip, `${name}_連番`, 'zip');
+      if (r.ok) toast(`連番 ${files.length - 1} 枚を ZIP で書き出しました`);
+    }
+  } catch (err){ toast('書き出せませんでした：' + ((err && err.message) || '')); }
+  finally {
+    anim.cur = keep; savingFile = false; requestRender(true);
+    setStatus(fileDirty ? '未保存の変更あり' : 'この端末に自動保存済み');
+  }
+}
+
 // --- 開く ---
 async function openFile(f, handle){
+  if (/\.(ase|aco|gpl)$/i.test(f.name)){ await importPaletteFile(f); return; }
   if (busy()) return;
   settle();
   if (fileDirty && undoStack.length){
@@ -2788,10 +3594,13 @@ async function doSave(){
   if (saving){ saveAgain = true; return; }
   saving = true;
   try {
-    const blobs = await Promise.all(layers.map(L => canvasBlob(L.canvas)));
-    if (blobs.some(b => !b)) throw new Error('toBlob');
-    const bufs = await Promise.all(blobs.map(b => b.arrayBuffer()));
-    const meta = { v: 2, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, layers: layers.map(L => ({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip })) };
+    const bufs = [], lm = [];
+    for (const L of layers){
+      const cels = [];
+      for (const k of sortedKeys(L)){ const c = L.cels.get(k); await celBytes(c); bufs.push(c.buf); cels.push({ frame: k, idx: bufs.length - 1 }); }
+      lm.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, cels });
+    }
+    const meta = { v: 3, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, anim: { frames: anim.frames, fps: anim.fps, loop: anim.loop }, layers: lm };
     try { await IDB.put('current', { meta, bufs, handle: fileHandle }); }
     catch (e){ await IDB.put('current', { meta, bufs }); }
     setStatus('この端末に自動保存済み');
@@ -2805,11 +3614,17 @@ async function restore(){
     const m = rec.meta;
     resetDoc(m.w, m.h);
     const ls = [];
+    void 0;
+    if (m.anim){ anim.frames = clamp(m.anim.frames | 0 || 24, 1, 1200); anim.fps = clamp(+m.anim.fps || 12, 1, 120); }
     for (let i = 0; i < m.layers.length; i++){
-      const info = m.layers[i], L = makeLayer(info.name);
+      const info = m.layers[i], L = makeLayer(info.name, true);
       Object.assign(L, { visible: !!info.visible, opacity: +info.opacity, blend: info.blend || 'source-over', lock: !!info.lock, clip: !!info.clip });
-      const bmp = await loadImage(new Blob([rec.bufs[i]], { type: 'image/png' }));
-      L.ctx.drawImage(bmp, 0, 0);
+      const list = Array.isArray(info.cels) ? info.cels : [{ frame: 0, idx: i }];
+      for (const c of list){
+        const buf = rec.bufs[c.idx]; if (!buf) continue;
+        const cel = newCel(); cel.ctx.drawImage(await loadImage(new Blob([buf], { type: 'image/png' })), 0, 0);
+        cel.buf = buf; cel.dirty = false; L.cels.set(c.frame | 0, cel);
+      }
       ls.push(L);
     }
     nameSeq = m.nameSeq || ls.length;
@@ -2826,11 +3641,22 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 /* ================= ダイアログ・トップバー・ステージバー ================= */
 let toastTimer = 0;
 function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), msg.length > 30 ? 3600 : 1900); }
-let confirmResolve = null;
+let confirmResolve = null, promptResolve = null;
 function closeModals(){
   for (const m of document.querySelectorAll('.modal.open')) m.classList.remove('open');
   if (confirmResolve){ const r = confirmResolve; confirmResolve = null; r(false); }
+  if (promptResolve){ const r = promptResolve; promptResolve = null; r(null); }
 }
+function promptBox(msg, value, okLabel){
+  $('#promptMsg').textContent = msg; $('#promptOk').textContent = okLabel || 'OK';
+  const inp = $('#promptInput'); inp.value = value || '';
+  $('#promptModal').classList.add('open'); inp.focus(); inp.select();
+  return new Promise(res => { promptResolve = res; });
+}
+function promptDone(){ const r = promptResolve; promptResolve = null; const v = $('#promptInput').value; closeModals(); if (r) r(v); }
+$('#promptOk').addEventListener('click', promptDone);
+$('#promptCancel').addEventListener('click', closeModals);
+$('#promptInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing){ e.preventDefault(); promptDone(); } });
 function confirmBox(msg, okLabel){
   $('#confirmMsg').textContent = msg; $('#confirmOk').textContent = okLabel || 'OK';
   $('#confirmModal').classList.add('open'); $('#confirmOk').focus();
@@ -2865,7 +3691,15 @@ function closePops(except){
 }
 function bindPop(btnSel, menuSel){
   const bt = $(btnSel), m = $(menuSel);
-  bt.addEventListener('click', e => { e.stopPropagation(); const open = m.hidden; closePops(m); m.hidden = !open; bt.setAttribute('aria-expanded', String(open)); if (open && menuSel === '#rotMenu') updateRotLabel(); });
+  bt.addEventListener('click', e => {
+    e.stopPropagation(); const open = m.hidden; closePops(m); m.hidden = !open; bt.setAttribute('aria-expanded', String(open));
+    if (open && menuSel === '#rotMenu') updateRotLabel();
+    if (open && m.classList.contains('fixed')){
+      const r = bt.getBoundingClientRect();
+      if (m.classList.contains('below')){ m.style.left = Math.max(8, Math.min(r.right - m.offsetWidth, innerWidth - m.offsetWidth - 8)) + 'px'; m.style.top = Math.min(r.bottom + 6, innerHeight - m.offsetHeight - 8) + 'px'; }
+      else { m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + 'px'; m.style.top = Math.max(8, r.top - m.offsetHeight - 6) + 'px'; }
+    }
+  });
 }
 bindPop('#btnZoom', '#zoomMenu'); bindPop('#btnFile', '#fileMenu'); bindPop('#btnRot', '#rotMenu');
 for (const b of $('#zoomMenu').querySelectorAll('button')) b.addEventListener('click', () => { const z = b.dataset.z; if (z === 'fit') fitView(); else setZoom(+z); closePops(); });
@@ -2909,24 +3743,274 @@ function updateStageBar(){
   }
 }
 
+/* ================= タイムライン・再生・オニオンスキン ================= */
+const TLG = { cw: 16, rh: 24, nameW: 116, rulerH: 20 };
+const tlBody = $('#tlBody'), tlCanvas = $('#tlCanvas');
+let tlOpen = (() => { try { return localStorage.getItem('kakoi.tl') === '1'; } catch (e){ return false; } })();
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M8.5 5.5v13M15.5 5.5v13"/></svg>';
+function setTimelineOpen(v){
+  tlOpen = v;
+  $('#timeline').classList.toggle('open', v);
+  $('#tlToggle').setAttribute('aria-expanded', String(v));
+  try { localStorage.setItem('kakoi.tl', v ? '1' : '0'); } catch (e) {}
+  syncAnimUI();
+  requestAnimationFrame(drawTimeline);
+}
+function setFrame(f, quiet){
+  f = clamp(Math.round(f), 0, anim.frames - 1);
+  if (f === anim.cur) return;
+  if (!quiet){ if (busy()) return; settle(); }
+  anim.cur = f;
+  if (!anim.playing) layers.forEach(updateThumb);
+  requestRender(true); tlFollow(); drawTimeline(); syncFrameLabel();
+}
+function stepKey(dir){
+  const ks = sortedKeys(active), hk = heldKey(active, anim.cur);
+  const k = dir > 0 ? ks.find(x => x > anim.cur) : [...ks].reverse().find(x => x < (hk >= 0 && hk < anim.cur ? hk : anim.cur));
+  if (k != null && k < anim.frames) setFrame(k);
+}
+let playRaf = 0, playLast = 0;
+function play(){
+  if (anim.playing){ stopPlay(); return; }
+  if (busy()) return;
+  settle();
+  if (anim.frames < 2){ toast('コマが1つしかありません。「長さ」を増やしてください'); return; }
+  anim.playing = true; playLast = performance.now();
+  const tick = now => {
+    if (!anim.playing) return;
+    const step = 1000 / anim.fps;
+    if (now - playLast >= step){
+      playLast += step; if (now - playLast > step * 3) playLast = now;
+      let n = anim.cur + 1;
+      if (n >= anim.frames){ if (anim.loop) n = 0; else { stopPlay(); return; } }
+      anim.cur = n; requestRender(true); tlFollow(); drawTimeline(); syncFrameLabel();
+    }
+    playRaf = requestAnimationFrame(tick);
+  };
+  playRaf = requestAnimationFrame(tick);
+  syncAnimUI(); requestRender(true);
+}
+function stopPlay(){
+  if (!anim.playing) return;
+  anim.playing = false; cancelAnimationFrame(playRaf);
+  layers.forEach(updateThumb); syncAnimUI(); requestRender(true);
+}
+function keyAction(kind){
+  if (busy()) return;
+  stopPlay(); settle();
+  const L = active; if (!L) return;
+  const f = anim.cur, hk = heldKey(L, f);
+  if (kind === 'blank' || kind === 'copy'){
+    if (hk === f){ toast('このコマにはもう絵があります。隣のコマに移ってから追加してください'); return; }
+    structChange(() => { const cel = newCel(); if (kind === 'copy' && hk >= 0) cel.ctx.drawImage(L.cels.get(hk).canvas, 0, 0); L.cels.set(f, cel); });
+    warnMemory();
+  } else if (kind === 'delete'){
+    if (hk < 0){ toast('このコマには消せる絵がありません'); return; }
+    structChange(() => { L.cels.delete(hk); });
+  } else if (kind === 'longer' || kind === 'shorter'){
+    if (hk < 0){ toast('このコマには絵がありません'); return; }
+    const after = sortedKeys(L).filter(k => k > hk);
+    if (!after.length){ toast('最後の絵は、全体の「長さ」の終わりまで続きます'); return; }
+    const d = kind === 'longer' ? 1 : -1;
+    if (d < 0 && after[0] - 1 <= hk){ toast('これ以上短くできません'); return; }
+    structChange(() => {
+      const m = new Map(); for (const [k, c] of L.cels) m.set(k > hk ? k + d : k, c); L.cels = m;
+      const last = after[after.length - 1] + d; if (last >= anim.frames) anim.frames = last + 1;
+    });
+  }
+  layers.forEach(updateThumb); drawTimeline(); syncAnimUI(); requestRender(true);
+}
+function tlFollow(){
+  if (!tlOpen) return;
+  const x = anim.cur * TLG.cw, vw = tlBody.clientWidth - TLG.nameW;
+  if (x < tlBody.scrollLeft) tlBody.scrollLeft = Math.max(0, x - TLG.cw * 2);
+  else if (x + TLG.cw > tlBody.scrollLeft + vw) tlBody.scrollLeft = x - vw + TLG.cw * 3;
+}
+function syncFrameLabel(){
+  const t = anim.cur / anim.fps;
+  $('#tlFrame').textContent = `${anim.cur + 1} / ${anim.frames}`;
+  $('#tlTime').textContent = `${t.toFixed(2)}秒`;
+}
+function syncAnimUI(){
+  syncFrameLabel();
+  const fpsSel = $('#tlFps');
+  if (![...fpsSel.options].some(o => +o.value === anim.fps)){ const o = el('option', null, String(anim.fps)); o.value = anim.fps; fpsSel.append(o); }
+  fpsSel.value = String(anim.fps);
+  const len = $('#tlLen'); if (document.activeElement !== len) len.value = anim.frames;
+  $('#tlLoop').setAttribute('aria-pressed', String(anim.loop));
+  $('#tlPlay').innerHTML = anim.playing ? ICON_PAUSE : ICON_PLAY;
+  $('#tlPlay').title = anim.playing ? '停止（Enter）' : '再生（Enter）';
+  $('#tlOnionBtn').setAttribute('aria-pressed', String(anim.onion.on));
+  $('#tlAuto').value = anim.autoKey;
+  $('#onOn').checked = anim.onion.on; $('#onTint').checked = anim.onion.tint;
+  for (const [id, k, u] of [['onPrev', 'prev', ''], ['onNext', 'next', ''], ['onOp', 'opacity', '%']]){ const r = $('#' + id); r.value = anim.onion[k]; r.nextElementSibling.textContent = anim.onion[k] + u; }
+  const mb = layers.length ? memMB() : 0;
+  $('#tlMem').textContent = `絵 ${layers.length ? celCount() : 0} 枚・約${mb}MB`;
+}
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function rr(c, x, y, w, h, r){ c.beginPath(); if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h); }
+function fitText(c, s, w){ if (c.measureText(s).width <= w) return s; while (s.length > 1 && c.measureText(s + '…').width > w) s = s.slice(0, -1); return s + '…'; }
+function drawTimeline(){
+  if (!tlOpen || !comp) return;
+  const vw = tlBody.clientWidth, vh = tlBody.clientHeight;
+  if (!vw || !vh) return;
+  const G = TLG, dpr = DPR();
+  const sp = $('#tlSpacer');
+  sp.style.width = (G.nameW + anim.frames * G.cw + 32) + 'px';
+  sp.style.height = (G.rulerH + layers.length * G.rh + 4) + 'px';
+  if (tlCanvas.width !== Math.round(vw * dpr) || tlCanvas.height !== Math.round(vh * dpr)){
+    tlCanvas.width = Math.round(vw * dpr); tlCanvas.height = Math.round(vh * dpr);
+    tlCanvas.style.width = vw + 'px'; tlCanvas.style.height = vh + 'px';
+  }
+  const c = tlCanvas.getContext('2d');
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const K = { panel: cssVar('--panel'), p2: cssVar('--panel-2'), field: cssVar('--field'), line: cssVar('--line'), ink: cssVar('--ink'), ink2: cssVar('--ink-2'), ink3: cssVar('--ink-3'), acc: cssVar('--accent'), soft: cssVar('--accent-soft'), on: cssVar('--on-accent') };
+  const sx = tlBody.scrollLeft, sy = tlBody.scrollTop, X = f => G.nameW + f * G.cw - sx;
+  const f0 = Math.max(0, Math.floor(sx / G.cw)), f1 = Math.min(anim.frames, Math.ceil((sx + vw - G.nameW) / G.cw) + 1);
+  c.fillStyle = K.field; c.fillRect(0, 0, vw, vh);
+  for (let f = f0; f < f1; f++) if (Math.floor(f / anim.fps) % 2 === 1){ c.fillStyle = K.p2; c.fillRect(X(f), G.rulerH, G.cw, vh); }
+  c.fillStyle = K.line; c.fillRect(X(anim.frames), G.rulerH, 1, vh);
+  for (let i = 0; i < layers.length; i++){
+    const L = layers[layers.length - 1 - i], y = G.rulerH + i * G.rh - sy;
+    if (y > vh || y + G.rh < G.rulerH) continue;
+    if (L === active){ c.fillStyle = K.soft; c.fillRect(G.nameW, y, vw, G.rh); }
+    c.fillStyle = K.line; c.fillRect(G.nameW, y + G.rh - 1, vw, 1);
+    const ks = sortedKeys(L), col = L === active ? K.acc : K.ink2;
+    for (let j = 0; j < ks.length; j++){
+      const k = ks[j]; if (k >= anim.frames) break;
+      const end = Math.min(j + 1 < ks.length ? ks[j + 1] : anim.frames, anim.frames);
+      if (end <= f0 || k > f1) continue;
+      if (end - k > 1){
+        c.fillStyle = col; c.globalAlpha = .45;
+        c.fillRect(X(k) + G.cw - 3, y + G.rh / 2 - 1.5, (end - k - 1) * G.cw + 1, 3);
+        c.fillRect(X(end) - 3, y + 7, 2, G.rh - 14);
+        c.globalAlpha = 1;
+      }
+      c.fillStyle = col; rr(c, X(k) + 2, y + 5, G.cw - 4, G.rh - 11, 3); c.fill();
+    }
+    if (!L.visible){ c.fillStyle = K.field; c.globalAlpha = .6; c.fillRect(G.nameW, y, vw, G.rh - 1); c.globalAlpha = 1; }
+  }
+  const px = X(anim.cur);
+  c.fillStyle = K.acc; c.globalAlpha = .13; c.fillRect(px, G.rulerH, G.cw, vh); c.globalAlpha = 1;
+  c.fillRect(px + G.cw / 2 - .5, G.rulerH, 1, vh);
+  c.fillStyle = K.panel; c.fillRect(0, 0, vw, G.rulerH);
+  c.fillStyle = K.line; c.fillRect(0, G.rulerH - 1, vw, 1);
+  c.font = '10px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'left';
+  for (let f = f0; f < f1; f++){
+    const x = X(f), big = f === 0 || (f + 1) % 5 === 0;
+    c.fillStyle = K.ink3; c.fillRect(x, big ? 11 : 15, 1, big ? 8 : 4);
+    if (big){ c.fillStyle = K.ink2; c.fillText(String(f + 1), x + 3, 7); }
+  }
+  c.fillStyle = K.acc; rr(c, px + 1, 1, G.cw - 2, G.rulerH - 4, 3); c.fill();
+  c.fillStyle = K.panel; c.fillRect(0, 0, G.nameW, vh);
+  c.fillStyle = K.line; c.fillRect(G.nameW - 1, 0, 1, vh);
+  c.fillStyle = K.ink3; c.font = '10px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  c.fillText(`${anim.fps}fps`, 8, G.rulerH / 2);
+  c.font = '11.5px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif';
+  for (let i = 0; i < layers.length; i++){
+    const L = layers[layers.length - 1 - i], y = G.rulerH + i * G.rh - sy;
+    if (y > vh || y + G.rh < G.rulerH) continue;
+    if (L === active){ c.fillStyle = K.soft; c.fillRect(0, y, G.nameW - 1, G.rh); c.fillStyle = K.acc; c.fillRect(0, y, 3, G.rh); }
+    c.fillStyle = L.visible ? K.ink : K.ink3;
+    c.fillText(fitText(c, (L.clip ? '↳ ' : '') + L.name, G.nameW - 16), 10, y + G.rh / 2);
+    c.fillStyle = K.line; c.fillRect(0, y + G.rh - 1, G.nameW, 1);
+  }
+  c.fillStyle = K.panel; c.fillRect(0, 0, G.nameW - 1, G.rulerH - 1);
+  c.fillStyle = K.ink3; c.font = '10px "Hiragino Sans","Noto Sans JP",system-ui,sans-serif'; c.fillText(`${anim.fps}fps`, 8, G.rulerH / 2);
+}
+let tlDrag = null;
+function tlHit(e){
+  const r = tlCanvas.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  return { x, y, f: Math.floor((x - TLG.nameW + tlBody.scrollLeft) / TLG.cw), row: Math.floor((y - TLG.rulerH + tlBody.scrollTop) / TLG.rh) };
+}
+tlCanvas.addEventListener('pointerdown', e => {
+  if (busy()) return;
+  stopPlay();
+  const h = tlHit(e);
+  if (h.y >= TLG.rulerH){
+    const L = layers[layers.length - 1 - h.row];
+    if (!L) return;
+    if (L !== active){ settle(); active = L; renderLayers(); }
+  }
+  if (h.x >= TLG.nameW){ setFrame(h.f); if (e.pointerType !== 'touch' || h.y < TLG.rulerH){ tlDrag = e.pointerId; try { tlCanvas.setPointerCapture(e.pointerId); } catch (_) {} } }
+  drawTimeline();
+});
+tlCanvas.addEventListener('pointermove', e => { if (tlDrag === e.pointerId) setFrame(tlHit(e).f); });
+tlCanvas.addEventListener('pointerup', () => { tlDrag = null; });
+tlCanvas.addEventListener('pointercancel', () => { tlDrag = null; });
+tlCanvas.addEventListener('dblclick', e => { const h = tlHit(e); if (h.x >= TLG.nameW && h.y >= TLG.rulerH && layers[layers.length - 1 - h.row]) keyAction('blank'); });
+tlBody.addEventListener('scroll', () => drawTimeline());
+new ResizeObserver(() => drawTimeline()).observe(tlBody);
+$('#tlToggle').addEventListener('click', () => setTimelineOpen(!tlOpen));
+$('#tlFirst').addEventListener('click', () => { stopPlay(); setFrame(0); });
+$('#tlPrev').addEventListener('click', () => { stopPlay(); setFrame(anim.cur - 1); });
+$('#tlPlay').addEventListener('click', play);
+$('#tlNext').addEventListener('click', () => { stopPlay(); setFrame(anim.cur + 1); });
+$('#tlLast').addEventListener('click', () => { stopPlay(); setFrame(anim.frames - 1); });
+$('#tlLoop').addEventListener('click', () => { anim.loop = !anim.loop; saveAnimPrefs(); syncAnimUI(); });
+$('#tlFps').addEventListener('change', e => { const v = clamp(+e.target.value || 12, 1, 120); structChange(() => { anim.fps = v; }); syncAnimUI(); drawTimeline(); });
+$('#tlLen').addEventListener('change', e => {
+  const n = clamp(Math.round(+e.target.value) || 1, 1, 1200);
+  if (n !== anim.frames){ stopPlay(); structChange(() => { anim.frames = n; }); if (anim.cur >= n) setFrame(n - 1, true); }
+  syncAnimUI(); drawTimeline();
+});
+$('#tlAuto').addEventListener('change', e => { anim.autoKey = e.target.value; saveAnimPrefs(); });
+$('#tlNew').addEventListener('click', () => keyAction('blank'));
+$('#tlDup').addEventListener('click', () => keyAction('copy'));
+$('#tlDel').addEventListener('click', () => keyAction('delete'));
+$('#tlLonger').addEventListener('click', () => keyAction('longer'));
+$('#tlShorter').addEventListener('click', () => keyAction('shorter'));
+$('#tlExport').addEventListener('click', () => openSeqDialog());
+bindPop('#tlOnionBtn', '#onionMenu');
+function toggleOnion(){ anim.onion.on = !anim.onion.on; saveAnimPrefs(); syncAnimUI(); requestRender(); }
+$('#onOn').addEventListener('change', e => { anim.onion.on = e.target.checked; saveAnimPrefs(); syncAnimUI(); requestRender(); });
+$('#onTint').addEventListener('change', e => { anim.onion.tint = e.target.checked; saveAnimPrefs(); requestRender(); });
+for (const [id, k, u] of [['onPrev', 'prev', ''], ['onNext', 'next', ''], ['onOp', 'opacity', '%']]){
+  $('#' + id).addEventListener('input', e => { anim.onion[k] = +e.target.value; e.target.nextElementSibling.textContent = e.target.value + u; saveAnimPrefs(); requestRender(); });
+}
+// オニオンスキン：選んでいるレイヤーの前後の絵を、色をつけて薄く重ねる
+function drawOnion(ctx){
+  const L = active; if (!L || L.cels.size < 2) return;
+  const ks = sortedKeys(L), hk = heldKey(L, anim.cur), O = anim.onion, list = [];
+  const prevKeys = ks.filter(k => k < (hk >= 0 ? hk : anim.cur)).slice(-O.prev).reverse();
+  const nextKeys = ks.filter(k => k > anim.cur && k < anim.frames).slice(0, O.next);
+  prevKeys.forEach((k, i) => list.push({ k, i, prev: true }));
+  nextKeys.forEach((k, i) => list.push({ k, i, prev: false }));
+  list.sort((a, b) => b.i - a.i);
+  for (const it of list){
+    onionCtx.globalAlpha = 1; onionCtx.globalCompositeOperation = 'copy';
+    onionCtx.drawImage(L.cels.get(it.k).canvas, 0, 0);
+    if (O.tint){ onionCtx.globalCompositeOperation = 'source-atop'; onionCtx.globalAlpha = .75; onionCtx.fillStyle = it.prev ? '#e0473e' : '#2f8f5b'; onionCtx.fillRect(0, 0, DW, DH); }
+    onionCtx.globalAlpha = 1; onionCtx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = (O.opacity / 100) * Math.pow(.6, it.i);
+    ctx.drawImage(onionBuf, 0, 0);
+  }
+  ctx.globalAlpha = 1;
+}
+
 /* ================= 起動 ================= */
 async function init(){
   readTheme();
   try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readTheme(); renderToolPanel(); }); } catch (e) {}
   resizeView();
   new ResizeObserver(() => resizeView()).observe(stageEl);
-  new ResizeObserver(() => sizePicker()).observe(svEl);
+  new ResizeObserver(() => sizePicker()).observe($('#colorSec'));
   let saved = null, savedSub = null;
   try { saved = parseHex(localStorage.getItem('kakoi.color') || ''); savedSub = parseHex(localStorage.getItem('kakoi.sub') || ''); } catch (e) {}
   if (savedSub) sub = savedSub;
   if (saved){ setColor(saved); drawSV(); } else setHSV(.56, .45, .5);
   renderRecent();
+  renderSwatches();
+  setPickMode(pickMode);
+  $('#timeline').classList.toggle('open', tlOpen); $('#tlToggle').setAttribute('aria-expanded', String(tlOpen));
   updateRotLabel();
   setTool('fill');
   updateUndo();
   const ok = await restore();
   if (ok){ updateUndo(); setStatus('この端末に自動保存済み'); toast('前回の絵を開きました'); }
   else newDocument(1600, 1200, '#ffffff');
+  syncAnimUI(); drawTimeline();
   if ('launchQueue' in window){
     window.launchQueue.setConsumer(async params => {
       const h = params && params.files && params.files[0];
