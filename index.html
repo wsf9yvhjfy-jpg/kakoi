@@ -214,6 +214,8 @@ button{touch-action:manipulation}
 .stagebar span{color:var(--ink-2);margin-right:4px}
 .loupe{position:absolute;z-index:8;pointer-events:none;border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,.35)}
 .loupe[hidden]{display:none}
+.inputlog{position:absolute;left:8px;bottom:8px;z-index:9;margin:0;max-width:min(560px,calc(100% - 16px));padding:8px 10px;background:rgba(20,20,22,.82);color:#e9e9e7;font:11px/1.5 ui-monospace,Menlo,monospace;border-radius:8px;pointer-events:none;white-space:pre-wrap}
+.inputlog[hidden]{display:none}
 .drawer-head{display:none}
 .wbtn[aria-pressed="true"]{color:var(--accent)}
 .toast{position:absolute;left:50%;bottom:18px;transform:translate(-50%,6px);background:var(--ink);color:var(--panel);padding:7px 13px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;max-width:90%;text-align:center}
@@ -383,6 +385,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
         <label class="mcheck"><input type="checkbox" data-win="tool"><span>ツール設定</span></label>
         <label class="mcheck"><input type="checkbox" data-win="layers"><span>レイヤー</span></label>
         <label class="mcheck"><input type="checkbox" data-win="timeline"><span>タイムライン</span></label>
+        <label class="mcheck"><input type="checkbox" id="inputLogToggle"><span>入力の記録を表示（不具合の調査用）</span></label>
         <hr>
         <button role="menuitem" data-act="floatAll">すべて切り離す</button>
         <button role="menuitem" data-act="gather">色・ツール設定・レイヤーをひとつにまとめる</button>
@@ -418,6 +421,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <canvas id="view"></canvas>
       <div class="stagebar" id="stageBar" hidden></div>
       <canvas class="loupe" id="loupe" hidden aria-hidden="true"></canvas>
+      <pre class="inputlog" id="inputLog" hidden></pre>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
     <section class="timeline" id="timeline" aria-label="タイムライン">
@@ -625,7 +629,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.4（2026年10月15日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.4.1（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -1704,6 +1708,10 @@ function snapAngle(a, b){
   return { x: a.x + Math.cos(ang) * len, y: a.y + Math.sin(ang) * len };
 }
 function commitFill(sh, line){
+  const t0 = performance.now();
+  try { commitFillInner(sh, line); } finally { ilog(`　囲い塗りを描画 ${Math.round(performance.now() - t0)}ms`); }
+}
+function commitFillInner(sh, line){
   const s = settings.fill, L = active;
   ensureCel(L, s.op === 'erase');
   const pad = s.feather + 2, b = shapeBounds(sh);
@@ -2137,6 +2145,23 @@ function updatePinch(){
   anchorView(g.doc, m);
   updateZoomLabel(); requestRender();
 }
+let penT = 0;
+const penActive = () => [...pointers.values()].some(q => q.type === 'pen') && performance.now() - penT < 2000;
+function dropTouchGesture(){
+  if (!gesture) return;
+  const ids = gesture.kind === 'pinch' ? gesture.ids : [gesture.id];
+  if (!ids.every(id => { const q = pointers.get(id); return !q || q.type === 'touch'; })) return;
+  for (const id of ids) if (pointers.has(id)) ignored.add(id);
+  gesture = null; ilog('　ペンが触れたので、指（手のひら）の操作を終了');
+}
+const inputLogBuf = [];
+let inputLogOn = false;
+function ilog(msg){
+  if (!inputLogOn) return;
+  inputLogBuf.push(`${(performance.now() / 1000).toFixed(2)}  ${msg}`);
+  if (inputLogBuf.length > 16) inputLogBuf.shift();
+  $('#inputLog').textContent = inputLogBuf.join('\n');
+}
 const waitingOp = () => op && (op.kind === 'poly' || (op.kind === 'gradLine' && op.pointerId == null));
 
 viewEl.addEventListener('pointerdown', e => {
@@ -2146,20 +2171,35 @@ viewEl.addEventListener('pointerdown', e => {
   closePops();
   try { viewEl.setPointerCapture(e.pointerId); } catch (_) {}
   const p = evPt(e);
+  ilog(`押す ${e.pointerType}#${e.pointerId}　ツール=${currentTool}　操作=${op ? op.kind : 'なし'}　指操作=${gesture ? gesture.kind : 'なし'}`);
+  if (e.pointerType !== 'touch'){
+    // ペン・マウスは同時に1本だけ。前の接触が残っていたら「離す」が届かなかったとみなして片付ける
+    for (const [id, q] of pointers) if (q.type === e.pointerType && id !== e.pointerId){ pointers.delete(id); ignored.delete(id); }
+    if (op && op.pointerId != null && op.pointerType === e.pointerType){ ilog('　前の操作の「離す」が届いていなかった → 完了させる'); completeOp(false); }
+  }
   pointers.set(e.pointerId, { x: p.x, y: p.y, type: e.pointerType });
-  if (e.pointerType === 'pen') penSeen = true;
+  if (e.pointerType === 'pen'){
+    penSeen = true; penT = performance.now();
+    dropTouchGesture();
+    clearLongPress();
+    if (op && op.pointerType === 'touch' && op.pointerId != null){
+      ignored.add(op.pointerId); ilog('　ペンが触れたので、指（手のひら）で始まった操作を取り消し');
+      if (op.kind === 'pick') endPick(); else cancelOp();
+    }
+  }
   if (e.pointerType === 'touch'){
+    if (penSeen && penActive()){ ignored.add(e.pointerId); ilog('　ペンで描いている最中の指・手のひら → 無視'); return; }
     const ids = [...pointers].filter(([, q]) => q.type === 'touch').map(([id]) => id);
-    if (ids.length === 2){ clearLongPress(); if (op && op.kind === 'pick'){ endPick(); } interruptTouchOp(); startPinch(ids); return; }
+    if (ids.length === 2){ clearLongPress(); if (op && op.kind === 'pick'){ endPick(); } interruptTouchOp(); startPinch(ids); ilog('　2本指 → 拡大縮小・移動'); return; }
     if (ids.length > 2){ ignored.add(e.pointerId); return; }
     if (!op || waitingOp()) armLongPress(e, p);
     if (penSeen && !gesture){ startPan(e.pointerId, p); return; }
   }
-  if (gesture){ ignored.add(e.pointerId); return; }
+  if (gesture){ ignored.add(e.pointerId); ilog(`　指の操作（${gesture.kind}）中なので無視`); return; }
   if (e.button === 1 || spaceDown){ e.preventDefault(); startPan(e.pointerId, p); return; }
   if (rotKey){ const c = stageCenter(); gesture = { kind: 'rotate', id: e.pointerId, c, doc: toDoc(c), a0: Math.atan2(p.y - c.y, p.x - c.x), r0: view.r }; viewEl.style.cursor = 'grabbing'; return; }
   if (e.pointerType === 'mouse' && e.button !== 0) return;
-  if (op && !waitingOp()){ ignored.add(e.pointerId); return; }
+  if (op && !waitingOp()){ ignored.add(e.pointerId); ilog(`　別の操作（${op.kind}）が続いているので無視`); return; }
   const d = toDoc(p);
   let tool = currentTool;
   if (e.altKey && PAINT_TOOLS.has(tool)) tool = 'picker';
@@ -2187,9 +2227,10 @@ viewEl.addEventListener('pointermove', e => {
   const r = viewEl.getBoundingClientRect(), p = evPt(e, r);
   const ptr = pointers.get(e.pointerId); if (ptr){ ptr.x = p.x; ptr.y = p.y; }
   if (e.pointerType !== 'touch') hover = { x: p.x, y: p.y, type: e.pointerType };
-  if (lp && lp.id === e.pointerId && Math.hypot(p.x - lp.x, p.y - lp.y) > 10) clearLongPress();
+  if (e.pointerType === 'pen') penT = performance.now();
+  if (lp && lp.id === e.pointerId && Math.hypot(p.x - lp.x, p.y - lp.y) > 8) clearLongPress();
   if (ignored.has(e.pointerId)) return;
-  if (gesture){
+  if (gesture && !(op && op.pointerId === e.pointerId)){
     if (gesture.kind === 'pinch') updatePinch();
     else if (gesture.kind === 'pan' && gesture.id === e.pointerId){ view.x = gesture.vx + (p.x - gesture.sx); view.y = gesture.vy + (p.y - gesture.sy); requestRender(); }
     else if (gesture.kind === 'rotate' && gesture.id === e.pointerId){
@@ -2224,34 +2265,45 @@ viewEl.addEventListener('pointermove', e => {
   if (currentTool === 'transform' && xf && !spaceDown && e.pointerType !== 'touch') viewEl.style.cursor = xfCursor(p);
   requestRender();
 });
+function completeOp(cancelled){
+  // iPad では手のひらを検知するとペンの接触が「キャンセル」されることがある。描いていた形はそのまま確定する
+  if (cancelled && op.pointerType === 'pen' && ['shape', 'stroke', 'lineblend', 'liquify'].includes(op.kind)) cancelled = false;
+  ilog(`　操作「${op.kind}」を${cancelled ? '取り消し' : '確定'}`);
+  if (cancelled){
+    if (op.kind === 'pick'){ endPick(); return; }
+    if (op.kind === 'gradLine'){ op.a = op.b = null; op.pointerId = null; } else cancelOp();
+    return;
+  }
+  switch (op.kind){
+    case 'stroke': endStroke(); break;
+    case 'shape': endShape(); break;
+    case 'pick': endPick(); break;
+    case 'liquify': endLiquify(); break;
+    case 'gradLine':
+      if (!op.a || Math.hypot(op.b.x - op.a.x, op.b.y - op.a.y) * view.s < 4){ op.a = op.b = null; op.pointerId = null; toast('ドラッグして色の向きを決めてください'); }
+      else { const g = op; op = null; commitFill(g.sh, { a: g.a, b: g.b }); }
+      break;
+    case 'xfLasso': { const pts = op.pts; op = null; if (pts.length >= 3) xfStartLasso(pts); break; }
+    case 'xfDrag': op = null; if (xf) xf.drag = null; updateCursor(); break;
+    case 'lineblend': { const o = op; op = null; if (Math.hypot(o.b.x - o.a.x, o.b.y - o.a.y) * view.s >= 3) commitLineBlend(o.a, o.b); break; }
+    case 'zoomDrag': { const o = op; op = null; if (!o.moved) zoomAt(o.out ? 1 / 1.6 : 1.6, o.sx, o.sy); break; }
+    default: op = null;
+  }
+}
 function finishPointer(e, cancelled){
   if (lp && lp.id === e.pointerId) clearLongPress();
+  ilog(`${cancelled ? 'キャンセル' : '離す'} ${e.pointerType}#${e.pointerId}`);
   pointers.delete(e.pointerId);
-  if (ignored.delete(e.pointerId)) return;
+  const wasIgnored = ignored.delete(e.pointerId);
+  if (op && op.pointerId === e.pointerId){ completeOp(cancelled); requestRender(); return; }
+  if (wasIgnored) return;
   if (gesture){
     if (gesture.kind === 'pinch' && gesture.ids.includes(e.pointerId)){
-      if (!cancelled && performance.now() - gesture.t0 < 300 && gesture.moved < 14){ undo(); toast('取り消しました'); }
+      if (!cancelled && performance.now() - gesture.t0 < 300 && gesture.moved < 14){ undo(); toast('取り消しました'); ilog('　2本指タップ → 取り消し'); }
       for (const id of gesture.ids) if (id !== e.pointerId && pointers.has(id)) ignored.add(id);
       gesture = null;
     } else if ((gesture.kind === 'pan' || gesture.kind === 'rotate') && gesture.id === e.pointerId){ gesture = null; updateCursor(); }
     return;
-  }
-  if (op && op.pointerId === e.pointerId){
-    if (cancelled){ if (op.kind === 'pick'){ endPick(); return; } if (op.kind === 'gradLine'){ op.a = op.b = null; op.pointerId = null; } else cancelOp(); requestRender(); return; }
-    switch (op.kind){
-      case 'stroke': endStroke(); break;
-      case 'shape': endShape(); break;
-      case 'pick': endPick(); break;
-      case 'liquify': endLiquify(); break;
-      case 'gradLine':
-        if (!op.a || Math.hypot(op.b.x - op.a.x, op.b.y - op.a.y) * view.s < 4){ op.a = op.b = null; op.pointerId = null; toast('ドラッグして色の向きを決めてください'); }
-        else { const g = op; op = null; commitFill(g.sh, { a: g.a, b: g.b }); }
-        break;
-      case 'xfLasso': { const pts = op.pts; op = null; if (pts.length >= 3) xfStartLasso(pts); break; }
-      case 'xfDrag': op = null; if (xf) xf.drag = null; updateCursor(); break;
-      case 'lineblend': { const o = op; op = null; if (Math.hypot(o.b.x - o.a.x, o.b.y - o.a.y) * view.s >= 3) commitLineBlend(o.a, o.b); break; }
-      case 'zoomDrag': { const o = op; op = null; if (!o.moved) zoomAt(o.out ? 1 / 1.6 : 1.6, o.sx, o.sy); break; }
-    }
   }
   requestRender();
 }
@@ -2430,7 +2482,7 @@ function clearLongPress(){ if (lp){ clearTimeout(lp.timer); lp = null; } }
 function armLongPress(e, p){
   clearLongPress();
   if (!settings.picker.longPress || e.pointerType !== 'touch' || currentTool === 'picker') return;
-  lp = { id: e.pointerId, x: p.x, y: p.y, timer: setTimeout(fireLongPress, 450) };
+  lp = { id: e.pointerId, x: p.x, y: p.y, timer: setTimeout(fireLongPress, penSeen ? 450 : 650) };
 }
 function fireLongPress(){
   const L = lp; lp = null;
@@ -2444,6 +2496,7 @@ function fireLongPress(){
     else if (op.pointerId === L.id) cancelOp();
     else return;
   }
+  ilog('　指の長押し → スポイト');
   startPick(L.id, 'touch', ptr, false);
   requestRender();
 }
@@ -3808,7 +3861,9 @@ function setStatus(t){ $('#status').textContent = t; }
 function scheduleSave(){ clearTimeout(saveTimer); setStatus('未保存の変更あり'); saveTimer = setTimeout(doSave, 1800); }
 async function doSave(){
   if (saving){ saveAgain = true; return; }
+  if ((op && op.pointerId != null) || gesture){ clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 800); return; }
   saving = true;
+  const t0 = performance.now();
   try {
     const bufs = [], lm = [];
     for (const L of layers){
@@ -3820,6 +3875,7 @@ async function doSave(){
     try { await IDB.put('current', { meta, bufs, handle: fileHandle }); }
     catch (e){ await IDB.put('current', { meta, bufs }); }
     setStatus('この端末に自動保存済み');
+    ilog(`自動保存 ${Math.round(performance.now() - t0)}ms`);
   } catch (e){ setStatus('自動保存できません'); }
   finally { saving = false; if (saveAgain){ saveAgain = false; scheduleSave(); } }
 }
@@ -4522,6 +4578,7 @@ function toggleUI(){
 const applyAllWins = renderLayout;
 window.addEventListener('resize', () => { for (const d of layout.docks) clampDock(d); });
 bindPop('#btnWin', '#winMenu');
+$('#inputLogToggle').addEventListener('change', e => { inputLogOn = e.target.checked; $('#inputLog').hidden = !inputLogOn; inputLogBuf.length = 0; $('#inputLog').textContent = '記録を始めました。うまくいかない操作をしたら、この表示ごと画面を撮影してください。'; });
 
 /* ================= 起動 ================= */
 async function init(){
