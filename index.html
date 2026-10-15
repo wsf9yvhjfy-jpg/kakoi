@@ -216,7 +216,12 @@ button{touch-action:manipulation}
 .loupe[hidden]{display:none}
 .inputlog{position:absolute;left:8px;bottom:8px;z-index:9;margin:0;max-width:min(560px,calc(100% - 16px));padding:8px 10px;background:rgba(20,20,22,.82);color:#e9e9e7;font:11px/1.5 ui-monospace,Menlo,monospace;border-radius:8px;pointer-events:none;white-space:pre-wrap}
 .inputlog[hidden]{display:none}
-.drawer-head{display:none}
+.drawer-head{display:flex;align-items:center;gap:2px;position:sticky;top:0;z-index:6;background:var(--panel);padding:6px 8px 6px 14px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink-2)}
+.drawer-head>span{margin-right:auto}
+#app.drawer .main{--panel-w:0px}
+#app.drawer .panel-toggle{display:inline-flex}
+#app.drawer #panel{position:fixed;z-index:40;right:0;top:calc(46px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);width:min(312px,88vw);transform:translateX(104%);transition:transform .2s ease;box-shadow:-14px 0 34px rgba(0,0,0,.22)}
+#app.drawer #panel.open{transform:none}
 .wbtn[aria-pressed="true"]{color:var(--accent)}
 .toast{position:absolute;left:50%;bottom:18px;transform:translate(-50%,6px);background:var(--ink);color:var(--panel);padding:7px 13px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -385,6 +390,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
         <label class="mcheck"><input type="checkbox" data-win="tool"><span>ツール設定</span></label>
         <label class="mcheck"><input type="checkbox" data-win="layers"><span>レイヤー</span></label>
         <label class="mcheck"><input type="checkbox" data-win="timeline"><span>タイムライン</span></label>
+        <label class="mcheck"><input type="checkbox" id="winPin"><span>右のパネルを常に表示（ピン留め）</span></label>
         <label class="mcheck"><input type="checkbox" id="inputLogToggle"><span>入力の記録を表示（不具合の調査用）</span></label>
         <hr>
         <button role="menuitem" data-act="floatAll">すべて切り離す</button>
@@ -583,7 +589,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     <dl>
       <dt>B / E</dt><dd>ブラシ／消しゴム（ブラシの「混ぜる」で混色）</dd>
       <dt>W</dt><dd>ゆがみ（押す・縮める・膨らます・渦）</dd>
-      <dt>V</dt><dd>移動・変形。Enter で確定、Esc で取り消し、矢印キーで 1px 移動</dd>
+      <dt>V</dt><dd>移動・変形。範囲（レイヤー全体・四角・囲む）と、変形のしかた（拡大・回転／四隅で遠近の変形／ワープで自由に曲げる）を選べます。Enter で確定、Esc で取り消し、矢印キーで 1px 移動</dd>
       <dt>I・Option</dt><dd>スポイト。色を拾うと直前のツールに戻ります。Option（Alt）を押している間もスポイトになります</dd>
       <dt>指で長押し</dt><dd>iPad などでは、指で画面を約0.5秒押し続けるとスポイトになり、拡大鏡で拾う場所を確認できます。指を動かして位置を調整し、離すと決まります</dd>
       <dt>Shift+X</dt><dd>メイン色とサブ色を入れ替え</dd>
@@ -611,6 +617,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>見出しをドラッグ</dt><dd>色・ツール設定・レイヤー・タイムラインをウィンドウとして切り離し、好きな場所に置けます。ツールの列とタイムラインは点々をドラッグします</dd>
       <dt>ドッキング</dt><dd>ドラッグ中にほかのウィンドウの上下の端に重ねると縦に、左右の端に重ねると横に並んでくっつきます（青い線が出た位置）。右のパネルや画面の下（タイムライン）・左端（ツール）に重ねると元の場所に戻ります。まとまったウィンドウは上の細い点々でまとめて動かせ、間の境目で幅を変えられます</dd>
       <dt>Tab</dt><dd>パネルを一時的に隠して、画面を広く使います</dd>
+      <dt>ピン留め</dt><dd>右のパネル上部のピンを外すと、パネルは描き始めたときに自動で隠れます（右上のボタンで出せます）。ピンを押すと常に表示に戻ります</dd>
       <dt>ウィンドウ</dt><dd>上のメニューで表示・非表示、すべて切り離す、配置を元に戻す</dd>
     </dl>
     <h3>表示</h3>
@@ -629,7 +636,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.4.1（2026年10月15日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.5（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -933,7 +940,7 @@ const DEFAULTS = {
   fill:   { shape:'free', op:'paint', stab:0, fillType:'solid', gShape:'linear', gColors:'mainsub', gDir:'line', gAngle:90, opacity:100, feather:0, jMode:'fill', jh:3, js:8, jv:8, jScale:60, jSteps:1, tex:'paper', tStr:30, tScale:100, tRot:0, tMode:'both', tRand:true },
   liquify:   { mode:'push', size:140, strength:50 },
   lineblend: { size:60, opacity:100, endFade:40, side:8, sample:'all', sampleR:4, mix:'oklab', jMode:'none', jh:0, js:0, jv:0, jScale:40, jSteps:1, tex:'none', tStr:40, tScale:100, tRot:0, tMode:'both', tRand:true },
-  transform: { target:'layer' },
+  transform: { target:'layer', mode:'affine' },
   zoom: {}, picker: { back: true, loupe: true, longPress: true },
 };
 const SETTINGS_KEY = 'kakoi.settings.v1';
@@ -1029,11 +1036,17 @@ const SCHEMA = {
     { t:'note', text:'選んでいるレイヤーの絵を、なぞった方向へ押し流します。縮める・膨らます・渦は、押している間ずっとかかり続けます。' },
   ],
   transform: [
-    { t:'seg', k:'target', opts:[['layer','レイヤー全体'],['lasso','囲って選ぶ']] },
-    { t:'note', text:'動かしたい部分をドラッグで囲むと、その部分だけを持ち上げて動かせます。', show:s => s.target === 'lasso' },
+    { t:'h', label:'動かす範囲' },
+    { t:'seg', k:'target', opts:[['layer','レイヤー全体'],['rect','四角で選ぶ'],['lasso','囲って選ぶ']] },
+    { t:'note', text:'動かしたい部分をドラッグで選ぶと、その部分だけを持ち上げて動かせます。', show:s => s.target !== 'layer' },
+    { t:'h', label:'変形のしかた' },
+    { t:'seg', k:'mode', opts:[['affine','拡大・回転'],['distort','四隅で変形'],['warp','ワープ']], onChange:v => xfSetMode(v) },
+    { t:'note', text:'四隅の点をそれぞれ動かして、遠近感のある形や斜めの形にします。内側をドラッグで全体を移動。', show:s => s.mode === 'distort' },
+    { t:'note', text:'16個の点を動かして、布をつまむように自由に曲げます。角は四角、内側の点は丸で表示されます。内側をドラッグで全体を移動。', show:s => s.mode === 'warp' },
     { t:'actions', items:[['左右反転', () => xfFlip('x')], ['上下反転', () => xfFlip('y')]] },
     { t:'actions', items:[['取り消し', () => xfCancel(), 'xf'], ['確定', () => xfCommit(), 'xf', true]] },
-    { t:'note', text:'枠の内側をドラッグで移動。四隅で拡大縮小（Shift で縦横を別々に）、辺で片方向に伸縮、枠の外側か上の丸で回転（Shift で 15° 刻み）。矢印キーで 1px ずつ動かせます。Enter で確定、Esc で取り消し。' },
+    { t:'note', text:'拡大・回転：枠の内側をドラッグで移動。四隅で拡大縮小（Shift で縦横を別々に）、辺で片方向に伸縮、枠の外側か上の丸で回転（Shift で 15° 刻み）。矢印キーで 1px ずつ動かせます。Enter で確定、Esc で取り消し。', show:s => s.mode === 'affine' },
+    { t:'note', text:'矢印キーで 1px ずつ動かせます。Enter で確定、Esc で取り消し。', show:s => s.mode !== 'affine' },
   ],
   zoom: [
     { t:'actions', items:[['全体を表示', () => fitView()], ['100%', () => setZoom(1)], ['200%', () => setZoom(2)]] },
@@ -1209,7 +1222,7 @@ function applyEntry(en, dir){
 }
 function undo(){
   if (xf){ xfCancel(); return; }
-  if (op){ if (['poly', 'shape', 'gradLine', 'xfLasso'].includes(op.kind)) cancelOp(); return; }
+  if (op){ if (['poly', 'shape', 'gradLine', 'xfLasso', 'xfRect'].includes(op.kind)) cancelOp(); return; }
   const en = undoStack.pop(); if (!en) return;
   applyEntry(en, -1); redoStack.push(en); afterHistory();
 }
@@ -1222,7 +1235,7 @@ function afterHistory(){ fileDirty = true; renderLayers(); requestRender(true); 
 function updateUndo(){ $('#undoBtn').disabled = !undoStack.length && !xf; $('#redoBtn').disabled = !redoStack.length; }
 const busy = () => !!(op && op.pointerId != null);
 function settle(){
-  if (op && ['poly', 'shape', 'gradLine', 'xfLasso'].includes(op.kind)) cancelOp();
+  if (op && ['poly', 'shape', 'gradLine', 'xfLasso', 'xfRect'].includes(op.kind)) cancelOp();
   if (xf) xfCommit();
 }
 
@@ -1258,7 +1271,7 @@ function layerSource(L){
     if (xf.base){ prevCtx.globalCompositeOperation = 'copy'; prevCtx.drawImage(xf.base, 0, 0); }
     else prevCtx.clearRect(0, 0, DW, DH);
     prevCtx.globalCompositeOperation = 'source-over';
-    drawFloat(prevCtx, xf);
+    renderXf(prevCtx, xf);
     return prev;
   }
   return L.canvas;
@@ -1408,6 +1421,7 @@ function drawOverlay(ctx){
   if (op && op.kind === 'xfLasso' && op.pts.length > 1){
     ctx.save(); ctx.beginPath(); pathShape(ctx, { type: 'free', pts: op.pts }, toScreen); strokeTwoTone(ctx); ctx.restore();
   }
+  if (op && op.kind === 'xfRect'){ ctx.save(); ctx.beginPath(); screenPath(ctx, { type: 'rect', a: op.a, b: op.b }); strokeTwoTone(ctx); ctx.restore(); }
   if (xf) drawXfHandles(ctx);
   if (hover && hover.type !== 'touch' && !gesture && !altDown && !spaceDown && (currentTool === 'brush' || currentTool === 'eraser' || currentTool === 'liquify')){
     const s = settings[currentTool];
@@ -1963,6 +1977,7 @@ function xfHit(sp){
   return (Math.abs(lx) <= W && Math.abs(ly) <= H) ? { type: 'move' } : { type: 'rotate' };
 }
 function xfCursor(sp){
+  if (xf.mode !== 'affine'){ const h = xfHitPts(sp); return h.type === 'pt' ? 'crosshair' : h.type === 'moveAll' ? 'move' : 'default'; }
   const h = xfHit(sp);
   if (h.type === 'move') return 'move';
   if (h.type === 'rotate') return 'grab';
@@ -1971,6 +1986,7 @@ function xfCursor(sp){
   return hx * hy > 0 ? 'nwse-resize' : 'nesw-resize';
 }
 function drawXfHandles(ctx){
+  if (xf.mode !== 'affine'){ drawXfPtsHandles(ctx); return; }
   const { P, W, H } = xfGeom(xf), pts = HANDLES.map(([hx, hy]) => toScreen(P(hx * W, hy * H)));
   ctx.save();
   ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < 4; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.closePath();
@@ -1986,7 +2002,8 @@ function xfStart(L, float, fx, fy, base){
   const orig = mk(DW, DH); orig.getContext('2d').drawImage(L.canvas, 0, 0);
   const nc = lastNewCel && lastNewCel.L === L ? lastNewCel : null; lastNewCel = null;
   xf = { L, ctx: L.ctx, newCel: nc, float, w: float.width, h: float.height, cx: fx + float.width / 2, cy: fy + float.height / 2, sx: 1, sy: 1, rot: 0, flipX: false, flipY: false, base, orig, drag: null };
-  xf.cx0 = xf.cx; xf.cy0 = xf.cy;
+  xf.cx0 = xf.cx; xf.cy0 = xf.cy; xf.mode = 'affine';
+  if (settings.transform.mode !== 'affine') xfToPoints(xf, settings.transform.mode);
   renderToolPanel(); updateUndo(); requestRender(true);
 }
 function layerBounds(L){
@@ -2032,6 +2049,7 @@ function xfStartLasso(pts){
   xfStart(L, f, x, y, base);
 }
 function xfDown(e, sp){
+  if (xf.mode !== 'affine'){ xfDownPts(e, sp); return; }
   const hit = xfHit(sp), d = toDoc(sp), X = xf;
   X.drag = { type: hit.type, p0: d, cx: X.cx, cy: X.cy, sx: X.sx, sy: X.sy, rot: X.rot };
   if (hit.type === 'scale'){
@@ -2043,6 +2061,7 @@ function xfDown(e, sp){
 }
 function xfMove(d, shift){
   const X = xf, g = X && X.drag; if (!g) return;
+  if (X.mode !== 'affine'){ xfMovePts(d); return; }
   if (g.type === 'move'){ X.cx = g.cx + d.x - g.p0.x; X.cy = g.cy + d.y - g.p0.y; }
   else if (g.type === 'rotate'){
     let a = g.rot + Math.atan2(d.y - g.cy, d.x - g.cx) - Math.atan2(g.p0.y - g.cy, g.p0.x - g.cx);
@@ -2064,12 +2083,12 @@ function xfCommit(){
   if (!xf) return;
   const X = xf; xf = null;
   if (op && op.kind === 'xfDrag') op = null;
-  if (!xfIsIdentity(X)){
+  if (!(X.mode === 'affine' ? xfIsIdentity(X) : xfPtsIdentity(X))){
     const L = X.L, C = X.ctx, bef = X.orig.getContext('2d').getImageData(0, 0, DW, DH);
     C.globalAlpha = 1;
     if (X.base){ C.globalCompositeOperation = 'copy'; C.drawImage(X.base, 0, 0); C.globalCompositeOperation = 'source-over'; }
     else C.clearRect(0, 0, DW, DH);
-    drawFloat(C, X);
+    if (X.mode === 'affine') drawFloat(C, X); else { const r = rasterXf(X); if (r) C.drawImage(r.canvas, r.x, r.y); }
     pushHistory({ kind: 'px', L, ctx: C, f: anim.cur, cel: heldCel(L), newCel: X.newCel, x: 0, y: 0, before: bef, after: C.getImageData(0, 0, DW, DH) });
     updateThumb(L);
   } else dropNewCel(X.newCel);
@@ -2084,12 +2103,223 @@ function xfCancel(){
 }
 function xfFlip(axis){
   if (!xf){
-    if (settings.transform.target === 'lasso'){ toast('先に動かしたい部分を囲んでください'); return; }
+    if (settings.transform.target !== 'layer'){ toast('先に動かしたい部分を選んでください'); return; }
     if (currentTool !== 'transform') setTool('transform');
     if (!xfStartLayer()) return;
   }
+  if (xf.mode !== 'affine'){ xfFlipPts(axis); return; }
   if (axis === 'x') xf.flipX = !xf.flipX; else xf.flipY = !xf.flipY;
   requestRender(true);
+}
+
+/* --- 変形モード：四隅で変形（遠近）・ワープ --- */
+function affinePt(X, u, v){
+  const c = Math.cos(X.rot), s = Math.sin(X.rot);
+  const lx = (u - X.w / 2) * X.sx * (X.flipX ? -1 : 1), ly = (v - X.h / 2) * X.sy * (X.flipY ? -1 : 1);
+  return { x: X.cx + lx * c - ly * s, y: X.cy + lx * s + ly * c };
+}
+function homography(q){
+  const [p0, p1, p2, p3] = q;
+  const dx1 = p1.x - p2.x, dx2 = p3.x - p2.x, dx3 = p0.x - p1.x + p2.x - p3.x;
+  const dy1 = p1.y - p2.y, dy2 = p3.y - p2.y, dy3 = p0.y - p1.y + p2.y - p3.y;
+  let g = 0, h = 0;
+  const den = dx1 * dy2 - dx2 * dy1;
+  if ((Math.abs(dx3) > 1e-9 || Math.abs(dy3) > 1e-9) && Math.abs(den) > 1e-12){ g = (dx3 * dy2 - dx2 * dy3) / den; h = (dx1 * dy3 - dx3 * dy1) / den; }
+  return [p1.x - p0.x + g * p1.x, p3.x - p0.x + h * p3.x, p0.x, p1.y - p0.y + g * p1.y, p3.y - p0.y + h * p3.y, p0.y, g, h, 1];
+}
+function hApply(H, u, v){ const w = H[6] * u + H[7] * v + H[8]; return { x: (H[0] * u + H[1] * v + H[2]) / w, y: (H[3] * u + H[4] * v + H[5]) / w }; }
+function inv3(m){
+  const [a, b, c, d, e, f, g, h, i] = m, A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g, det = a * A + b * B + c * C;
+  if (Math.abs(det) < 1e-14) return null;
+  return [A / det, -(b * i - c * h) / det, (b * f - c * e) / det, B / det, (a * i - c * g) / det, -(a * f - c * d) / det, C / det, -(a * h - b * g) / det, (a * e - b * d) / det];
+}
+const bern = t => { const m = 1 - t; return [m * m * m, 3 * t * m * m, 3 * t * t * m, t * t * t]; };
+function bezPatch(G, u, v){
+  const bu = bern(u), bv = bern(v); let x = 0, y = 0;
+  for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++){ const w = bu[i] * bv[j], p = G[j * 4 + i]; x += p.x * w; y += p.y * w; }
+  return { x, y };
+}
+function xfMap(X){
+  if (X.mode === 'distort'){ const H = homography(X.quad); return (u, v) => hApply(H, u, v); }
+  if (X.mode === 'warp') return (u, v) => bezPatch(X.grid, u, v);
+  return (u, v) => affinePt(X, u * X.w, v * X.h);
+}
+function xfSmall(X){
+  if (X.small) return X.small;
+  const k = Math.min(1, 640 / Math.max(X.w, X.h));
+  if (k >= 1){ X.small = X.float; return X.small; }
+  const c = mk(Math.max(1, Math.round(X.w * k)), Math.max(1, Math.round(X.h * k))), cx = c.getContext('2d');
+  cx.imageSmoothingQuality = 'high'; cx.drawImage(X.float, 0, 0, c.width, c.height);
+  X.small = c; return c;
+}
+function drawTri(ctx, img, s0, s1, s2, d0, d1, d2){
+  const ax = s1.x - s0.x, ay = s1.y - s0.y, bx = s2.x - s0.x, by = s2.y - s0.y, den = ax * by - bx * ay;
+  if (Math.abs(den) < 1e-9) return;
+  const cx1 = d1.x - d0.x, cy1 = d1.y - d0.y, cx2 = d2.x - d0.x, cy2 = d2.y - d0.y;
+  const m11 = (cx1 * by - cx2 * ay) / den, m12 = (cx2 * ax - cx1 * bx) / den, m21 = (cy1 * by - cy2 * ay) / den, m22 = (cy2 * ax - cy1 * bx) / den;
+  const e = d0.x - m11 * s0.x - m12 * s0.y, f = d0.y - m21 * s0.x - m22 * s0.y;
+  const mx = (d0.x + d1.x + d2.x) / 3, my = (d0.y + d1.y + d2.y) / 3;
+  const grow = p => { const dx = p.x - mx, dy = p.y - my, L = Math.hypot(dx, dy) || 1; return [p.x + dx / L * .7, p.y + dy / L * .7]; };
+  const [x0, y0] = grow(d0), [x1, y1] = grow(d1), [x2, y2] = grow(d2);
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.closePath(); ctx.clip();
+  ctx.transform(m11, m21, m12, m22, e, f);
+  ctx.drawImage(img, 0, 0);
+  ctx.restore();
+}
+function drawXfMesh(ctx, X){
+  const img = xfSmall(X), iw = img.width, ih = img.height, map = xfMap(X), N = X.mode === 'warp' ? 12 : 8, P = [], S = [];
+  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++){ P.push(map(i / N, j / N)); S.push({ x: i / N * iw, y: j / N * ih }); }
+  ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+    const a = j * (N + 1) + i, b = a + 1, c = a + N + 2, d = a + N + 1;
+    drawTri(ctx, img, S[a], S[b], S[c], P[a], P[b], P[c]);
+    drawTri(ctx, img, S[a], S[c], S[d], P[a], P[c], P[d]);
+  }
+  ctx.restore();
+}
+function renderXf(ctx, X){ if (X.mode === 'distort' || X.mode === 'warp') drawXfMesh(ctx, X); else drawFloat(ctx, X); }
+// 確定時：ピクセル単位で正確に描き直す（つなぎ目なし）
+function rasterXf(X){
+  const map = xfMap(X), edge = [];
+  for (let k = 0; k <= 32; k++){ const t = k / 32; edge.push(map(t, 0), map(1, t), map(t, 1), map(0, t)); }
+  if (X.mode === 'warp') for (let j = 1; j < 8; j++) for (let i = 1; i < 8; i++) edge.push(map(i / 8, j / 8));
+  const x0 = Math.max(0, Math.floor(Math.min(...edge.map(p => p.x))) - 2), y0 = Math.max(0, Math.floor(Math.min(...edge.map(p => p.y))) - 2);
+  const x1 = Math.min(DW, Math.ceil(Math.max(...edge.map(p => p.x))) + 2), y1 = Math.min(DH, Math.ceil(Math.max(...edge.map(p => p.y))) + 2);
+  const w = x1 - x0, h = y1 - y0;
+  if (w <= 0 || h <= 0) return null;
+  const sw = X.w, sh = X.h, src = X.float.getContext('2d').getImageData(0, 0, sw, sh).data;
+  const out = new Float32Array(w * h * 4);
+  const put = (px, py, u, v) => {
+    const fx = u - .5, fy = v - .5, ix = Math.floor(fx), iy = Math.floor(fy), tx = fx - ix, ty = fy - iy;
+    let R = 0, G = 0, B = 0, A = 0;
+    for (let k = 0; k < 4; k++){
+      const xx = ix + (k & 1), yy = iy + (k >> 1);
+      if (xx < 0 || yy < 0 || xx >= sw || yy >= sh) continue;
+      const wgt = ((k & 1) ? tx : 1 - tx) * ((k >> 1) ? ty : 1 - ty), o = (yy * sw + xx) * 4, a = src[o + 3] / 255 * wgt;
+      R += src[o] * a; G += src[o + 1] * a; B += src[o + 2] * a; A += a;
+    }
+    if (A <= 0) return;
+    const o = ((py - y0) * w + (px - x0)) * 4, keep = 1 - A;
+    out[o] = R + out[o] * keep; out[o + 1] = G + out[o + 1] * keep; out[o + 2] = B + out[o + 2] * keep; out[o + 3] = A + out[o + 3] * keep;
+  };
+  if (X.mode === 'distort'){
+    const Hi = inv3(homography(X.quad)); if (!Hi) return null;
+    for (let py = y0; py < y1; py++) for (let px = x0; px < x1; px++){
+      const X_ = px + .5, Y_ = py + .5, wv = Hi[6] * X_ + Hi[7] * Y_ + Hi[8];
+      if (Math.abs(wv) < 1e-12) continue;
+      const u = (Hi[0] * X_ + Hi[1] * Y_ + Hi[2]) / wv, v = (Hi[3] * X_ + Hi[4] * Y_ + Hi[5]) / wv;
+      if (u < -.01 || v < -.01 || u > 1.01 || v > 1.01) continue;
+      put(px, py, u * sw, v * sh);
+    }
+  } else {
+    const N = 40, P = [], U = [];
+    for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++){ P.push(map(i / N, j / N)); U.push([i / N * sw, j / N * sh]); }
+    const tri = (a, b, c) => {
+      const A = P[a], B = P[b], C = P[c], den = (B.y - C.y) * (A.x - C.x) + (C.x - B.x) * (A.y - C.y);
+      if (Math.abs(den) < 1e-9) return;
+      const bx0 = Math.max(x0, Math.floor(Math.min(A.x, B.x, C.x))), bx1 = Math.min(x1 - 1, Math.ceil(Math.max(A.x, B.x, C.x)));
+      const by0 = Math.max(y0, Math.floor(Math.min(A.y, B.y, C.y))), by1 = Math.min(y1 - 1, Math.ceil(Math.max(A.y, B.y, C.y)));
+      for (let py = by0; py <= by1; py++) for (let px = bx0; px <= bx1; px++){
+        const qx = px + .5, qy = py + .5;
+        const l1 = ((B.y - C.y) * (qx - C.x) + (C.x - B.x) * (qy - C.y)) / den, l2 = ((C.y - A.y) * (qx - C.x) + (A.x - C.x) * (qy - C.y)) / den, l3 = 1 - l1 - l2;
+        if (l1 < -1e-6 || l2 < -1e-6 || l3 < -1e-6) continue;
+        put(px, py, l1 * U[a][0] + l2 * U[b][0] + l3 * U[c][0], l1 * U[a][1] + l2 * U[b][1] + l3 * U[c][1]);
+      }
+    };
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++){
+      const a = j * (N + 1) + i, b = a + 1, c = a + N + 2, d = a + N + 1;
+      tri(a, b, c); tri(a, c, d);
+    }
+  }
+  const img = new ImageData(w, h), d = img.data;
+  for (let k = 0; k < w * h; k++){
+    const A = out[k * 4 + 3]; if (A <= 0) continue;
+    d[k * 4] = out[k * 4] / A; d[k * 4 + 1] = out[k * 4 + 1] / A; d[k * 4 + 2] = out[k * 4 + 2] / A; d[k * 4 + 3] = Math.min(1, A) * 255;
+  }
+  const c = mk(w, h); c.getContext('2d').putImageData(img, 0, 0);
+  return { canvas: c, x: x0, y: y0 };
+}
+function xfToPoints(X, m){
+  const pts = (u, v) => affinePt(X, u * X.w, v * X.h);
+  X.quad = [pts(0, 0), pts(1, 0), pts(1, 1), pts(0, 1)];
+  X.grid = []; for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) X.grid.push(pts(i / 3, j / 3));
+  X.affineId = xfIsIdentity(X); X.quad0 = X.quad.map(p => ({ ...p })); X.grid0 = X.grid.map(p => ({ ...p }));
+  X.mode = m;
+}
+function xfSetMode(m){
+  if (!xf || xf.mode === m) return;
+  const X = xf;
+  if (X.mode === 'affine') xfToPoints(X, m);
+  else if (X.mode === 'distort' && m === 'warp'){
+    const H = homography(X.quad); X.grid = [];
+    for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) X.grid.push(hApply(H, i / 3, j / 3));
+    X.mode = 'warp';
+  } else {
+    const restart = settings.transform.target === 'layer';
+    xfCommit();
+    if (!(restart && xfStartLayer())) toast('ここまでの変形を確定しました');
+    return;
+  }
+  renderToolPanel(); requestRender(true);
+}
+const xfPts = X => X.mode === 'distort' ? X.quad : X.grid;
+function xfOutline(X, n){ const map = xfMap(X), o = []; for (let k = 0; k < n; k++) o.push(map(k / n, 0)); for (let k = 0; k < n; k++) o.push(map(1, k / n)); for (let k = 0; k < n; k++) o.push(map(1 - k / n, 1)); for (let k = 0; k < n; k++) o.push(map(0, 1 - k / n)); return o; }
+function inPoly(p, poly){ let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++){ const a = poly[i], b = poly[j]; if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) c = !c; } return c; }
+function xfHitPts(sp){
+  const pts = xfPts(xf);
+  let best = -1, bd = 16;
+  pts.forEach((p, i) => { const q = toScreen(p), dd = Math.hypot(q.x - sp.x, q.y - sp.y); if (dd <= bd){ bd = dd; best = i; } });
+  if (best >= 0) return { type: 'pt', i: best };
+  return inPoly(toDoc(sp), xfOutline(xf, 12)) ? { type: 'moveAll' } : { type: 'none' };
+}
+function drawXfPtsHandles(ctx){
+  const X = xf, map = xfMap(X), S = toScreen;
+  ctx.save(); ctx.lineWidth = 1;
+  ctx.beginPath(); const ol = xfOutline(X, 24).map(S); ctx.moveTo(ol[0].x, ol[0].y); for (const q of ol) ctx.lineTo(q.x, q.y); ctx.closePath();
+  ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.stroke(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#fff'; ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(255,255,255,.55)';
+  for (const t of [1 / 3, 2 / 3]){
+    ctx.beginPath(); for (let k = 0; k <= 16; k++){ const q = S(map(t, k / 16)); k ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); } ctx.stroke();
+    ctx.beginPath(); for (let k = 0; k <= 16; k++){ const q = S(map(k / 16, t)); k ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); } ctx.stroke();
+  }
+  if (X.mode === 'warp'){
+    ctx.strokeStyle = 'rgba(47,67,196,.7)'; ctx.setLineDash([2, 3]);
+    for (let j = 0; j < 4; j++){ ctx.beginPath(); for (let i = 0; i < 4; i++){ const q = S(X.grid[j * 4 + i]); i ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); } ctx.stroke(); }
+    for (let i = 0; i < 4; i++){ ctx.beginPath(); for (let j = 0; j < 4; j++){ const q = S(X.grid[j * 4 + i]); j ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); } ctx.stroke(); }
+    ctx.setLineDash([]);
+  }
+  xfPts(X).forEach((p, i) => {
+    const q = S(p), corner = X.mode === 'distort' || [0, 3, 12, 15].includes(i);
+    ctx.beginPath();
+    if (corner) ctx.rect(q.x - 5, q.y - 5, 10, 10); else ctx.arc(q.x, q.y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = '#000'; ctx.stroke();
+  });
+  ctx.restore();
+}
+function xfDownPts(e, sp){
+  const hit = xfHitPts(sp);
+  if (hit.type === 'none') return;
+  xf.drag = { type: hit.type, i: hit.i, p0: toDoc(sp), start: xfPts(xf).map(p => ({ ...p })) };
+  op = { kind: 'xfDrag', pointerId: e.pointerId, pointerType: e.pointerType };
+}
+function xfMovePts(d){
+  const X = xf, g = X.drag, pts = xfPts(X), dx = d.x - g.p0.x, dy = d.y - g.p0.y;
+  if (g.type === 'pt'){ pts[g.i].x = g.start[g.i].x + dx; pts[g.i].y = g.start[g.i].y + dy; }
+  else pts.forEach((p, i) => { p.x = g.start[i].x + dx; p.y = g.start[i].y + dy; });
+  requestRender(true);
+}
+function xfFlipPts(axis){
+  const X = xf;
+  if (X.mode === 'distort'){ const q = X.quad; X.quad = axis === 'x' ? [q[1], q[0], q[3], q[2]] : [q[3], q[2], q[1], q[0]]; }
+  else { const G = X.grid, n = []; for (let j = 0; j < 4; j++) for (let i = 0; i < 4; i++) n.push(axis === 'x' ? G[j * 4 + (3 - i)] : G[(3 - j) * 4 + i]); X.grid = n; }
+  X.flippedPts = !X.flippedPts;
+  requestRender(true);
+}
+function xfPtsIdentity(X){
+  if (!X.affineId || X.flippedPts) return false;
+  const same = (a, b) => a.every((p, i) => Math.abs(p.x - b[i].x) < 1e-6 && Math.abs(p.y - b[i].y) < 1e-6);
+  return X.mode === 'distort' ? same(X.quad, X.quad0) : same(X.grid, X.grid0);
 }
 
 /* ================= スポイト ================= */
@@ -2108,7 +2338,7 @@ function cancelOp(){
     o.L.ctx.globalCompositeOperation = 'copy'; o.L.ctx.drawImage(before, 0, 0); o.L.ctx.globalCompositeOperation = 'source-over';
     updateThumb(o.L);
   }
-  if (o.kind === 'xfDrag' && xf && xf.drag){ const g = xf.drag; Object.assign(xf, { cx: g.cx, cy: g.cy, sx: g.sx, sy: g.sy, rot: g.rot }); xf.drag = null; }
+  if (o.kind === 'xfDrag' && xf && xf.drag){ const g = xf.drag; if (g.start){ const pts = xfPts(xf); g.start.forEach((q, i) => { pts[i].x = q.x; pts[i].y = q.y; }); } else Object.assign(xf, { cx: g.cx, cy: g.cy, sx: g.sx, sy: g.sy, rot: g.rot }); xf.drag = null; }
   if ((o.kind === 'stroke' || o.kind === 'liquify') && lastNewCel){ dropNewCel(lastNewCel); lastNewCel = null; }
   requestRender(true);
 }
@@ -2219,6 +2449,7 @@ viewEl.addEventListener('pointerdown', e => {
       if (xf && xf.L !== active) xfCommit();
       if (xf){ xfDown(e, p); break; }
       if (settings.transform.target === 'layer'){ if (xfStartLayer()) xfDown(e, p); break; }
+      if (settings.transform.target === 'rect'){ op = { kind: 'xfRect', pointerId: e.pointerId, pointerType: e.pointerType, a: d, b: d }; requestRender(); break; }
       op = { kind: 'xfLasso', pointerId: e.pointerId, pointerType: e.pointerType, pts: [d] };
       break;
   }
@@ -2252,6 +2483,7 @@ viewEl.addEventListener('pointermove', e => {
       case 'gradLine': { const d = toDoc(p); op.b = e.shiftKey ? snapAngle(op.a, d) : d; requestRender(); break; }
       case 'xfLasso': { const d = toDoc(p), last = op.pts[op.pts.length - 1]; if (Math.hypot(d.x - last.x, d.y - last.y) >= 1.5 / view.s) op.pts.push(d); requestRender(); break; }
       case 'xfDrag': xfMove(toDoc(p), e.shiftKey); break;
+      case 'xfRect': op.b = toDoc(p); requestRender(); break;
       case 'lineblend': { const d = toDoc(p); op.b = e.shiftKey ? snapAngle(op.a, d) : d; requestRender(); break; }
       case 'zoomDrag': {
         const dx = p.x - op.sx;
@@ -2284,6 +2516,12 @@ function completeOp(cancelled){
       else { const g = op; op = null; commitFill(g.sh, { a: g.a, b: g.b }); }
       break;
     case 'xfLasso': { const pts = op.pts; op = null; if (pts.length >= 3) xfStartLasso(pts); break; }
+    case 'xfRect': {
+      const o = op; op = null;
+      const x0 = Math.min(o.a.x, o.b.x), y0 = Math.min(o.a.y, o.b.y), x1 = Math.max(o.a.x, o.b.x), y1 = Math.max(o.a.y, o.b.y);
+      if (x1 - x0 > 2 && y1 - y0 > 2) xfStartLasso([{ x: x0, y: y0 }, { x: x1, y: y0 }, { x: x1, y: y1 }, { x: x0, y: y1 }]);
+      break;
+    }
     case 'xfDrag': op = null; if (xf) xf.drag = null; updateCursor(); break;
     case 'lineblend': { const o = op; op = null; if (Math.hypot(o.b.x - o.a.x, o.b.y - o.a.y) * view.s >= 3) commitLineBlend(o.a, o.b); break; }
     case 'zoomDrag': { const o = op; op = null; if (!o.moved) zoomAt(o.out ? 1 / 1.6 : 1.6, o.sx, o.sy); break; }
@@ -2378,7 +2616,8 @@ window.addEventListener('keydown', e => {
     e.preventDefault();
     const st = e.shiftKey ? 10 : 1, dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.code];
     const o = toDoc({ x: 0, y: 0 }), t = toDoc({ x: dir[0], y: dir[1] }), len = Math.hypot(t.x - o.x, t.y - o.y) || 1;
-    xf.cx += (t.x - o.x) / len * st; xf.cy += (t.y - o.y) / len * st;
+    const mx = (t.x - o.x) / len * st, my = (t.y - o.y) / len * st;
+    if (xf.mode !== 'affine') for (const q of xfPts(xf)){ q.x += mx; q.y += my; } else { xf.cx += mx; xf.cy += my; }
     requestRender(true); return;
   }
   if ((e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.key === ',' || e.key === '.') && e.target.type !== 'range'){
@@ -2500,20 +2739,41 @@ function fireLongPress(){
   startPick(L.id, 'touch', ptr, false);
   requestRender();
 }
-// 右のパネル（iPad の縦画面など）：描き始めたら自動で閉じる。ピン留め中は閉じない
+// 右のパネル：ピン留め（常に表示）と、描き始めると自動で隠れるパネル（すべての画面サイズ）
 const PIN_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5l-.8 5.2 3.3 3.3v1.8H7v-1.8l3.3-3.3z"/><path d="M12 13.8V21"/></svg>';
 const PIN_ON = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5l-.8 5.2 3.3 3.3v1.8H7v-1.8l3.3-3.3z"/><path d="M12 13.8V21" fill="none"/></svg>';
-let panelPinned = (() => { try { return localStorage.getItem('kakoi.panelPin') === '1'; } catch (e){ return false; } })();
 const drawerMQ = matchMedia('(max-width: 860px)');
+let pinNarrow = (() => { try { return localStorage.getItem('kakoi.panelPin') === '1'; } catch (e){ return false; } })();
+let pinWide = (() => { try { return localStorage.getItem('kakoi.pinWide') !== '0'; } catch (e){ return true; } })();
+const panelPinned = () => drawerMQ.matches ? pinNarrow : pinWide;
+const drawerMode = () => drawerMQ.matches || !pinWide;
+function savePins(){ try { localStorage.setItem('kakoi.panelPin', pinNarrow ? '1' : '0'); localStorage.setItem('kakoi.pinWide', pinWide ? '1' : '0'); } catch (e) {} }
 function syncPin(){
-  const b = $('#panelPin');
-  b.setAttribute('aria-pressed', String(panelPinned)); b.innerHTML = panelPinned ? PIN_ON : PIN_OFF;
-  b.title = panelPinned ? 'ピン留め中（描き始めても閉じません）' : 'ピン留めする（描き始めても閉じないようにする）';
+  const b = $('#panelPin'), on = panelPinned();
+  b.setAttribute('aria-pressed', String(on)); b.innerHTML = on ? PIN_ON : PIN_OFF;
+  b.title = drawerMQ.matches ? (on ? 'ピン留め中（描き始めても閉じません）' : 'ピン留めする（描き始めても閉じない）')
+                             : (on ? 'ピン留め中（常に表示）。押すと、描き始めたときに自動で隠れるパネルになります' : 'ピン留めして常に表示する');
   b.setAttribute('aria-label', b.title);
+  const wp = document.getElementById('winPin'); if (wp) wp.checked = pinWide;
 }
-$('#panelPin').addEventListener('click', () => { panelPinned = !panelPinned; try { localStorage.setItem('kakoi.panelPin', panelPinned ? '1' : '0'); } catch (e) {} syncPin(); toast(panelPinned ? 'パネルをピン留めしました' : 'ピン留めを外しました'); });
-$('#panelClose').addEventListener('click', () => setPanel(false));
-function autoCloseDrawer(){ if (drawerMQ.matches && !panelPinned && panelEl.classList.contains('open')) setPanel(false); }
+function applyPanelMode(){
+  $('#app').classList.toggle('drawer', drawerMode());
+  if (!drawerMode()) $('#panel').classList.remove('open');
+  syncPin();
+  requestAnimationFrame(() => { resizeView(); sizePicker(); drawTimeline(); });
+}
+function setPinWide(v, keepOpen){ pinWide = v; savePins(); applyPanelMode(); if (!v && keepOpen) setPanel(true); }
+$('#panelPin').addEventListener('click', () => {
+  if (drawerMQ.matches){ pinNarrow = !pinNarrow; savePins(); syncPin(); toast(pinNarrow ? 'パネルをピン留めしました' : 'ピン留めを外しました'); return; }
+  const v = !pinWide; setPinWide(v, true);
+  toast(v ? 'パネルを常に表示します' : 'パネルは描き始めると自動で隠れます。右上のボタンでいつでも出せます');
+});
+$('#panelClose').addEventListener('click', () => {
+  if (!drawerMQ.matches && pinWide){ setPinWide(false, false); toast('右上のボタンでパネルを出せます'); }
+  setPanel(false);
+});
+if (drawerMQ.addEventListener) drawerMQ.addEventListener('change', applyPanelMode); else drawerMQ.addListener(applyPanelMode);
+function autoCloseDrawer(){ if (drawerMode() && !panelPinned() && panelEl.classList.contains('open')) setPanel(false); }
 syncPin();
 
 /* ================= ツールと設定パネル ================= */
@@ -2542,7 +2802,7 @@ function buildControl(c, s){
       const g = el('div', 'seg'); g.setAttribute('role', 'group');
       for (const [v, lab] of c.opts){
         const b = el('button', null, lab); b.type = 'button'; b.setAttribute('aria-pressed', String(s[c.k] === v));
-        b.addEventListener('click', () => { s[c.k] = v; saveSettings(); if (op && op.pointerId == null) cancelOp(); renderToolPanel(); requestRender(); });
+        b.addEventListener('click', () => { s[c.k] = v; saveSettings(); if (op && op.pointerId == null) cancelOp(); if (c.onChange) c.onChange(v); renderToolPanel(); requestRender(); });
         g.append(b);
       }
       return g;
@@ -3998,7 +4258,7 @@ document.addEventListener('keyup', e => { if (e.code === 'Space' && e.target && 
 // キャンバス上の操作バー（タッチでも確定・取り消しができるように）
 let stageKey = '';
 function updateStageBar(){
-  const key = xf ? (op && op.kind === 'xfDrag' ? 'xf-drag' : 'xf') : op && op.kind === 'gradLine' ? 'grad' : op && op.kind === 'poly' ? 'poly' : '';
+  const key = xf ? (op && op.kind === 'xfDrag' ? 'xf-drag-' : 'xf-') + xf.mode : op && op.kind === 'gradLine' ? 'grad' : op && op.kind === 'poly' ? 'poly' : '';
   if (key === stageKey) return;
   stageKey = key;
   const bar = $('#stageBar'); bar.textContent = ''; bar.hidden = !key;
@@ -4006,6 +4266,7 @@ function updateStageBar(){
   const add = (lab, fn, strong) => { const b = el('button', strong ? 'mini strong' : 'mini', lab); b.type = 'button'; b.addEventListener('click', fn); bar.append(b); };
   if (key.startsWith('xf')){
     bar.append(el('span', null, '変形中'));
+    for (const [m, lab] of [['affine', '拡大・回転'], ['distort', '四隅'], ['warp', 'ワープ']]) add(lab, () => { settings.transform.mode = m; saveSettings(); xfSetMode(m); stageKey = ''; requestRender(); }, xf && xf.mode === m);
     add('左右反転', () => xfFlip('x')); add('上下反転', () => xfFlip('y')); add('取り消し', xfCancel); add('確定', xfCommit, true);
   } else if (key === 'grad'){
     bar.append(el('span', null, 'ドラッグで色の向きを決めます'));
@@ -4578,6 +4839,7 @@ function toggleUI(){
 const applyAllWins = renderLayout;
 window.addEventListener('resize', () => { for (const d of layout.docks) clampDock(d); });
 bindPop('#btnWin', '#winMenu');
+$('#winPin').addEventListener('change', e => { setPinWide(e.target.checked, false); });
 $('#inputLogToggle').addEventListener('change', e => { inputLogOn = e.target.checked; $('#inputLog').hidden = !inputLogOn; inputLogBuf.length = 0; $('#inputLog').textContent = '記録を始めました。うまくいかない操作をしたら、この表示ごと画面を撮影してください。'; });
 
 /* ================= 起動 ================= */
@@ -4597,6 +4859,7 @@ async function init(){
   $('#timeline').classList.toggle('open', tlOpen); $('#tlToggle').setAttribute('aria-expanded', String(tlOpen));
   updateRotLabel();
   renderLayout();
+  applyPanelMode();
   setTool('fill');
   updateUndo();
   const ok = await restore();
