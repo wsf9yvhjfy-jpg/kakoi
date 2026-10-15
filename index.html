@@ -636,7 +636,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.5（2026年10月15日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.5.1（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -1075,6 +1075,7 @@ const SCHEMA = {
 /* ================= ドキュメントとレイヤー ================= */
 let DW = 1600, DH = 1200;
 let layers = [], active = null, idSeq = 0, nameSeq = 0;
+let rawG, rawGCtx;
 let comp, compCtx, before, beforeCtx, raw, rawCtx, disp, dispCtx, prev, prevCtx, clipBuf, clipCtx;
 let currentTool = 'fill', op = null, xf = null;
 let docName = '無題', fileDirty = false;
@@ -1085,6 +1086,7 @@ function allocScratch(){
   comp = mk(DW, DH); compCtx = comp.getContext('2d');
   before = mk(DW, DH); beforeCtx = before.getContext('2d');
   raw = mk(DW, DH); rawCtx = raw.getContext('2d', { willReadFrequently: true });
+  rawG = mk(DW, DH); rawGCtx = rawG.getContext('2d');
   disp = mk(DW, DH); dispCtx = disp.getContext('2d');
   prev = mk(DW, DH); prevCtx = prev.getContext('2d');
   clipBuf = mk(DW, DH); clipCtx = clipBuf.getContext('2d');
@@ -1124,8 +1126,31 @@ function ensureCel(L, modify){
   lastNewCel = { L, f: anim.cur, cel };
   drawTimeline(); syncAnimUI(); warnMemory();
 }
+// PNG への変換は、できれば別スレッド（Worker）で行い、描いている最中の引っ掛かりを防ぐ
+const pngWorker = (() => {
+  try {
+    if (typeof OffscreenCanvas === 'undefined' || !window.Worker || !window.createImageBitmap) return null;
+    const src = "self.onmessage=async e=>{const{id,bmp}=e.data;try{const c=new OffscreenCanvas(bmp.width,bmp.height);c.getContext('2d').drawImage(bmp,0,0);if(bmp.close)bmp.close();const b=await c.convertToBlob({type:'image/png'});const buf=await b.arrayBuffer();self.postMessage({id,buf},[buf]);}catch(err){self.postMessage({id,err:String(err)});}};";
+    const w = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+    const pending = new Map(); let seq = 0, broken = false;
+    w.onmessage = e => { const pnd = pending.get(e.data.id); if (!pnd) return; pending.delete(e.data.id); if (e.data.err) pnd.rej(new Error(e.data.err)); else pnd.res(e.data.buf); };
+    w.onerror = () => { broken = true; for (const pnd of pending.values()) pnd.rej(new Error('worker')); pending.clear(); };
+    return {
+      async encode(canvas){
+        if (broken) throw new Error('worker');
+        const bmp = await createImageBitmap(canvas), id = ++seq;
+        return new Promise((res, rej) => { pending.set(id, { res, rej }); w.postMessage({ id, bmp }, [bmp]); });
+      },
+    };
+  } catch (e){ return null; }
+})();
 async function celBytes(cel){
-  if (!cel.buf || cel.dirty){ cel.dirty = false; cel.buf = await (await canvasBlob(cel.canvas)).arrayBuffer(); }
+  if (!cel.buf || cel.dirty){
+    cel.dirty = false;
+    let buf = null;
+    if (pngWorker){ try { buf = await pngWorker.encode(cel.canvas); } catch (e){ buf = null; } }
+    cel.buf = buf || await (await canvasBlob(cel.canvas)).arrayBuffer();
+  }
   return new Uint8Array(cel.buf);
 }
 function dropNewCel(nc){
@@ -1297,7 +1322,15 @@ function compose(){
   }
   c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
 }
+const heavyLog = [];
+function heavyMark(label, t0, t1){ if (!inputLogOn) return; heavyLog.push({ label, t0, t1 }); if (heavyLog.length > 30) heavyLog.shift(); }
+function heavyNote(from, to){ const hit = heavyLog.filter(h => h.t1 >= from && h.t0 <= to).map(h => `${h.label} ${Math.round(h.t1 - h.t0)}ms`); return hit.length ? hit.join('、') : '原因の処理は見つからず（ブラウザ側の遅れの可能性）'; }
 function render(){
+  const tR = inputLogOn ? performance.now() : 0;
+  renderInner();
+  if (tR){ const t1 = performance.now(); if (t1 - tR > 24) heavyMark('画面の描画', tR, t1); }
+}
+function renderInner(){
   qRender = false;
   if (!comp) return;
   if (qCompose){ compose(); qCompose = false; }
@@ -1499,7 +1532,9 @@ function beginStroke(tool, e, d){
   if (!canPaint(L, tool === 'eraser')) return;
   ensureCel(L, tool === 'eraser');
   const s = settings[tool], proc = makeProc(s, tool);
-  rawCtx.clearRect(0, 0, DW, DH);
+  // テクスチャなど1ピクセルずつの処理がいる時だけ CPU 側の下書きを使う（いらない時は GPU 側で速く描く）
+  const rc = proc.active ? rawCtx : rawGCtx;
+  rc.clearRect(0, 0, DW, DH);
   if (proc.active) dispCtx.clearRect(0, 0, DW, DH);
   beforeCtx.globalCompositeOperation = 'copy'; beforeCtx.drawImage(L.canvas, 0, 0); beforeCtx.globalCompositeOperation = 'source-over';
   let base = tool === 'eraser' ? { r: 0, g: 0, b: 0 } : { ...color };
@@ -1511,7 +1546,7 @@ function beginStroke(tool, e, d){
     last: null, need: 0, dirty: null, rect: null, mixData, carry: { ...base },
     lazy: s.stab > 0 ? { x: d.x, y: d.y } : null, raw: d, rawPr: pressureOf(e),
     gco: tool === 'eraser' ? 'destination-out' : (L.lock ? 'source-atop' : 'source-over'),
-    opacity: s.opacity / 100, src: proc.active ? disp : raw,
+    opacity: s.opacity / 100, src: proc.active ? disp : rawG, rc,
   };
   if (mixData){
     const m0 = sampleMix(mixData, d.x, d.y, diameterAt(s, pressureOf(e)) / 2);
@@ -1578,7 +1613,7 @@ function stampAt(x, y, pr){
     }
     c = { r: cr.r, g: cr.g, b: cr.b };
   }
-  const ctx = rawCtx, col = rgbStr(c);
+  const ctx = op.rc, col = rgbStr(c);
   ctx.globalAlpha = a;
   if (op.tool === 'brush' && s.tip === 'flat'){
     ctx.save(); ctx.translate(x, y); ctx.rotate(s.angle * Math.PI / 180);
@@ -1609,6 +1644,10 @@ function flushDirty(){
   }
 }
 function endStroke(){
+  const tE = performance.now();
+  try { endStrokeInner(); } finally { const t1 = performance.now(); heavyMark('線の確定', tE, t1); if (t1 - tE > 30) ilog(`　線の確定 ${Math.round(t1 - tE)}ms`); }
+}
+function endStrokeInner(){
   if (op.lazy && op.raw) addPoint(op.raw, op.rawPr);
   flushDirty();
   const o = op; op = null;
@@ -1723,7 +1762,7 @@ function snapAngle(a, b){
 }
 function commitFill(sh, line){
   const t0 = performance.now();
-  try { commitFillInner(sh, line); } finally { ilog(`　囲い塗りを描画 ${Math.round(performance.now() - t0)}ms`); }
+  try { commitFillInner(sh, line); } finally { const t1 = performance.now(); heavyMark('囲い塗りの描画', t0, t1); ilog(`　囲い塗りを描画 ${Math.round(t1 - t0)}ms`); }
 }
 function commitFillInner(sh, line){
   const s = settings.fill, L = active;
@@ -2459,6 +2498,11 @@ viewEl.addEventListener('pointermove', e => {
   const ptr = pointers.get(e.pointerId); if (ptr){ ptr.x = p.x; ptr.y = p.y; }
   if (e.pointerType !== 'touch') hover = { x: p.x, y: p.y, type: e.pointerType };
   if (e.pointerType === 'pen') penT = performance.now();
+  if (inputLogOn && op && op.pointerId === e.pointerId){
+    const now = performance.now();
+    if (op.lastT && now - op.lastT > 70) ilog(`⚠ ペン入力が ${Math.round(now - op.lastT)}ms 途切れた（その間：${heavyNote(op.lastT, now)}）`);
+    op.lastT = now;
+  }
   if (lp && lp.id === e.pointerId && Math.hypot(p.x - lp.x, p.y - lp.y) > 8) clearLongPress();
   if (ignored.has(e.pointerId)) return;
   if (gesture && !(op && op.pointerId === e.pointerId)){
@@ -2549,6 +2593,8 @@ viewEl.addEventListener('pointerup', e => finishPointer(e, false));
 viewEl.addEventListener('pointercancel', e => finishPointer(e, true));
 viewEl.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch'){ hover = null; requestRender(); } });
 viewEl.addEventListener('contextmenu', e => e.preventDefault());
+// iPad の Safari は、touch イベントを止めないと手書き入力（スクリブル）やジェスチャーの判定で入力を遅らせることがある
+for (const t of ['touchstart', 'touchmove', 'touchend']) viewEl.addEventListener(t, e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
 viewEl.addEventListener('dblclick', () => { if (op && op.kind === 'poly') closePoly(); });
 viewEl.addEventListener('wheel', e => {
   e.preventDefault();
@@ -3737,12 +3783,14 @@ async function openPsdBytes(u8, name){
 }
 // 16bit や CMYK など、自前で読めない PSD だけ外部ライブラリ（ag-psd）に任せる
 const AGPSD_URL = 'https://cdn.jsdelivr.net/npm/ag-psd@31.0.2/dist/bundle.js';
+// 配信されたファイルが改ざんされていないかを照合する（npm に公開された 31.0.2 と同じ中身のときだけ実行される）
+const AGPSD_SRI = 'sha384-9dhx2Gx3cKvCuBJwLZxPUmqz77LqKJIAzYABzUhCaCPDK5Rz+CFt6/jeKu84tBA6';
 let agPsdP = null;
 function loadAgPsd(){
   if (window.agPsd) return Promise.resolve(window.agPsd);
   if (!agPsdP) agPsdP = new Promise((res, rej) => {
     const sc = document.createElement('script');
-    sc.src = AGPSD_URL; sc.async = true;
+    sc.src = AGPSD_URL; sc.async = true; sc.integrity = AGPSD_SRI; sc.crossOrigin = 'anonymous';
     sc.onload = () => window.agPsd ? res(window.agPsd) : rej(new Error('library'));
     sc.onerror = () => { agPsdP = null; rej(new Error('network')); };
     document.head.append(sc);
@@ -4118,7 +4166,7 @@ const IDB = {
 };
 let saveTimer = 0, saving = false, saveAgain = false;
 function setStatus(t){ $('#status').textContent = t; }
-function scheduleSave(){ clearTimeout(saveTimer); setStatus('未保存の変更あり'); saveTimer = setTimeout(doSave, 1800); }
+function scheduleSave(){ clearTimeout(saveTimer); setStatus('未保存の変更あり'); saveTimer = setTimeout(doSave, 3000); }
 async function doSave(){
   if (saving){ saveAgain = true; return; }
   if ((op && op.pointerId != null) || gesture){ clearTimeout(saveTimer); saveTimer = setTimeout(doSave, 800); return; }
@@ -4135,7 +4183,7 @@ async function doSave(){
     try { await IDB.put('current', { meta, bufs, handle: fileHandle }); }
     catch (e){ await IDB.put('current', { meta, bufs }); }
     setStatus('この端末に自動保存済み');
-    ilog(`自動保存 ${Math.round(performance.now() - t0)}ms`);
+    heavyMark('自動保存', t0, performance.now()); ilog(`自動保存 ${Math.round(performance.now() - t0)}ms（PNG 変換：${pngWorker ? '別スレッド' : 'メイン'}）`);
   } catch (e){ setStatus('自動保存できません'); }
   finally { saving = false; if (saveAgain){ saveAgain = false; scheduleSave(); } }
 }
