@@ -212,6 +212,10 @@ button{touch-action:manipulation}
 .stagebar{position:absolute;left:50%;top:12px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);font-size:12px;white-space:nowrap;max-width:calc(100% - 24px);overflow-x:auto}
 .stagebar[hidden]{display:none}
 .stagebar span{color:var(--ink-2);margin-right:4px}
+.loupe{position:absolute;z-index:8;pointer-events:none;border-radius:50%;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.loupe[hidden]{display:none}
+.drawer-head{display:none}
+.wbtn[aria-pressed="true"]{color:var(--accent)}
 .toast{position:absolute;left:50%;bottom:18px;transform:translate(-50%,6px);background:var(--ink);color:var(--panel);padding:7px 13px;border-radius:8px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -327,6 +331,8 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
   #panel{position:fixed;z-index:40;right:0;top:calc(46px + env(safe-area-inset-top,0px));bottom:env(safe-area-inset-bottom,0px);width:min(312px,88vw);transform:translateX(104%);transition:transform .2s ease;box-shadow:-14px 0 34px rgba(0,0,0,.22)}
   #panel.open{transform:none}
   .panel-toggle{display:inline-flex}
+  .drawer-head{display:flex;align-items:center;gap:2px;position:sticky;top:0;z-index:6;background:var(--panel);padding:6px 8px 6px 14px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink-2)}
+  .drawer-head>span{margin-right:auto}
   .sub,.status,.tb-label,.docname,.rotlabel{display:none}
   .brand{margin-right:4px}
 }
@@ -411,6 +417,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     <div id="stage">
       <canvas id="view"></canvas>
       <div class="stagebar" id="stageBar" hidden></div>
+      <canvas class="loupe" id="loupe" hidden aria-hidden="true"></canvas>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
     </div>
     <section class="timeline" id="timeline" aria-label="タイムライン">
@@ -458,6 +465,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     </div>
 
     <aside id="panel" aria-label="設定">
+      <div class="drawer-head"><span>パネル</span><button class="wbtn" type="button" id="panelPin" aria-pressed="false"></button><button class="wbtn" type="button" id="panelClose" title="閉じる" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
       <section class="sec" id="colorSec">
         <h2>色<span class="wctl"><button class="wbtn" type="button" data-wact="float"></button><button class="wbtn" type="button" data-wact="fold"></button></span></h2>
         <div class="pm-row"><span class="pm-seg" id="pickMode" role="group" aria-label="色の選び方"><button type="button" data-m="square">四角</button><button type="button" data-m="wheel">ホイール</button><button type="button" data-m="hl">色相×明るさ</button></span></div>
@@ -572,7 +580,8 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>B / E</dt><dd>ブラシ／消しゴム（ブラシの「混ぜる」で混色）</dd>
       <dt>W</dt><dd>ゆがみ（押す・縮める・膨らます・渦）</dd>
       <dt>V</dt><dd>移動・変形。Enter で確定、Esc で取り消し、矢印キーで 1px 移動</dd>
-      <dt>I・Option</dt><dd>スポイト。Option（Alt）を押している間もスポイトになります</dd>
+      <dt>I・Option</dt><dd>スポイト。色を拾うと直前のツールに戻ります。Option（Alt）を押している間もスポイトになります</dd>
+      <dt>指で長押し</dt><dd>iPad などでは、指で画面を約0.5秒押し続けるとスポイトになり、拡大鏡で拾う場所を確認できます。指を動かして位置を調整し、離すと決まります</dd>
       <dt>Shift+X</dt><dd>メイン色とサブ色を入れ替え</dd>
       <dt>[ と ]</dt><dd>ブラシ・消しゴム・ゆがみの大きさ</dd>
       <dt>⌘Z・Ctrl+Z</dt><dd>取り消し（2本指タップでも取り消せます）。⇧⌘Z・Ctrl+Y でやり直し</dd>
@@ -616,7 +625,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.3.1（2026年10月15日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.4（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -921,7 +930,7 @@ const DEFAULTS = {
   liquify:   { mode:'push', size:140, strength:50 },
   lineblend: { size:60, opacity:100, endFade:40, side:8, sample:'all', sampleR:4, mix:'oklab', jMode:'none', jh:0, js:0, jv:0, jScale:40, jSteps:1, tex:'none', tStr:40, tScale:100, tRot:0, tMode:'both', tRand:true },
   transform: { target:'layer' },
-  zoom: {}, picker: {},
+  zoom: {}, picker: { back: true, loupe: true, longPress: true },
 };
 const SETTINGS_KEY = 'kakoi.settings.v1';
 const settings = (() => {
@@ -1039,7 +1048,10 @@ const SCHEMA = {
     ...TEXTURE('lineblend'),
   ],
   picker: [
-    { t:'note', text:'キャンバスを押して色を拾います。囲い塗り・ブラシ・消しゴム・ゆがみを使っている間も、Option（Alt）キーを押しながらクリックすれば色を拾えます。' },
+    { t:'note', text:'キャンバスを押して色を拾います。押したまま動かすと、拡大鏡で拾う場所を確かめながら選べます。ほかのツールを使っている間も、Option（Alt）キーを押しながらクリックすれば色を拾えます。' },
+    { t:'check', k:'back', label:'色を拾ったら、前のツールに戻る' },
+    { t:'check', k:'loupe', label:'拡大鏡（ルーペ）で拾う場所を表示する' },
+    { t:'check', k:'longPress', label:'指で長押しすると色を拾う（iPad など）' },
   ],
 };
 
@@ -2138,8 +2150,9 @@ viewEl.addEventListener('pointerdown', e => {
   if (e.pointerType === 'pen') penSeen = true;
   if (e.pointerType === 'touch'){
     const ids = [...pointers].filter(([, q]) => q.type === 'touch').map(([id]) => id);
-    if (ids.length === 2){ interruptTouchOp(); startPinch(ids); return; }
+    if (ids.length === 2){ clearLongPress(); if (op && op.kind === 'pick'){ endPick(); } interruptTouchOp(); startPinch(ids); return; }
     if (ids.length > 2){ ignored.add(e.pointerId); return; }
+    if (!op || waitingOp()) armLongPress(e, p);
     if (penSeen && !gesture){ startPan(e.pointerId, p); return; }
   }
   if (gesture){ ignored.add(e.pointerId); return; }
@@ -2152,8 +2165,9 @@ viewEl.addEventListener('pointerdown', e => {
   if (e.altKey && PAINT_TOOLS.has(tool)) tool = 'picker';
   if (tool === 'picker'){
     if (op){ pickAt(d); return; }
-    op = { kind: 'pick', pointerId: e.pointerId, pointerType: e.pointerType }; pickAt(d); return;
+    startPick(e.pointerId, e.pointerType, p, tool === currentTool); return;
   }
+  if (tool !== 'zoom') autoCloseDrawer();
   if (op && op.kind === 'gradLine'){ op.a = d; op.b = d; op.pointerId = e.pointerId; op.pointerType = e.pointerType; requestRender(); return; }
   switch (tool){
     case 'brush': case 'eraser': beginStroke(tool, e, d); break;
@@ -2173,6 +2187,7 @@ viewEl.addEventListener('pointermove', e => {
   const r = viewEl.getBoundingClientRect(), p = evPt(e, r);
   const ptr = pointers.get(e.pointerId); if (ptr){ ptr.x = p.x; ptr.y = p.y; }
   if (e.pointerType !== 'touch') hover = { x: p.x, y: p.y, type: e.pointerType };
+  if (lp && lp.id === e.pointerId && Math.hypot(p.x - lp.x, p.y - lp.y) > 10) clearLongPress();
   if (ignored.has(e.pointerId)) return;
   if (gesture){
     if (gesture.kind === 'pinch') updatePinch();
@@ -2191,7 +2206,7 @@ viewEl.addEventListener('pointermove', e => {
     switch (op.kind){
       case 'stroke': for (const ce of evs) strokeInput(toDoc(evPt(ce, r)), pressureOf(ce)); flushDirty(); requestRender(true); break;
       case 'shape': for (const ce of evs) moveShape(toDoc(evPt(ce, r)), e.shiftKey); requestRender(); break;
-      case 'pick': pickAt(toDoc(p)); break;
+      case 'pick': { const d = toDoc(p); pickAt(d); updateLoupe(p, d); break; }
       case 'liquify': for (const ce of evs) liquifyMove(toDoc(evPt(ce, r))); break;
       case 'gradLine': { const d = toDoc(p); op.b = e.shiftKey ? snapAngle(op.a, d) : d; requestRender(); break; }
       case 'xfLasso': { const d = toDoc(p), last = op.pts[op.pts.length - 1]; if (Math.hypot(d.x - last.x, d.y - last.y) >= 1.5 / view.s) op.pts.push(d); requestRender(); break; }
@@ -2210,6 +2225,7 @@ viewEl.addEventListener('pointermove', e => {
   requestRender();
 });
 function finishPointer(e, cancelled){
+  if (lp && lp.id === e.pointerId) clearLongPress();
   pointers.delete(e.pointerId);
   if (ignored.delete(e.pointerId)) return;
   if (gesture){
@@ -2221,11 +2237,11 @@ function finishPointer(e, cancelled){
     return;
   }
   if (op && op.pointerId === e.pointerId){
-    if (cancelled){ if (op.kind === 'gradLine'){ op.a = op.b = null; op.pointerId = null; } else cancelOp(); requestRender(); return; }
+    if (cancelled){ if (op.kind === 'pick'){ endPick(); return; } if (op.kind === 'gradLine'){ op.a = op.b = null; op.pointerId = null; } else cancelOp(); requestRender(); return; }
     switch (op.kind){
       case 'stroke': endStroke(); break;
       case 'shape': endShape(); break;
-      case 'pick': op = null; break;
+      case 'pick': endPick(); break;
       case 'liquify': endLiquify(); break;
       case 'gradLine':
         if (!op.a || Math.hypot(op.b.x - op.a.x, op.b.y - op.a.y) * view.s < 4){ op.a = op.b = null; op.pointerId = null; toast('ドラッグして色の向きを決めてください'); }
@@ -2360,11 +2376,99 @@ window.addEventListener('keyup', e => {
 });
 window.addEventListener('blur', () => { spaceDown = false; altDown = false; rotKey = false; updateCursor(); });
 
+/* ================= スポイト（ルーペ・長押し・前のツールに戻る） ================= */
+const loupeEl = $('#loupe'), LOUPE = 132, LOUPE_K = 11;
+let prevTool = 'brush', lp = null, resumeOp = null;
+function showLoupe(sp, d){ if (!settings.picker.loupe) return; loupeEl.hidden = false; updateLoupe(sp, d); }
+function hideLoupe(){ loupeEl.hidden = true; }
+function updateLoupe(sp, d){
+  if (loupeEl.hidden) return;
+  const dpr = DPR(), S = LOUPE, W = Math.round(S * dpr), k = LOUPE_K;
+  if (loupeEl.width !== W){ loupeEl.width = loupeEl.height = W; loupeEl.style.width = loupeEl.style.height = S + 'px'; }
+  const st = stageEl.getBoundingClientRect();
+  let x = sp.x - S / 2, y = sp.y - S - 40;
+  if (y < 4) y = sp.y + 44;
+  loupeEl.style.left = clamp(x, 4, st.width - S - 4) + 'px'; loupeEl.style.top = clamp(y, 4, st.height - S - 4) + 'px';
+  if (qCompose){ compose(); qCompose = false; }
+  const c = loupeEl.getContext('2d'), M = vm(), s = view.s;
+  c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, W);
+  c.save();
+  c.beginPath(); c.arc(W / 2, W / 2, W / 2 - 8 * dpr, 0, Math.PI * 2); c.clip();
+  c.fillStyle = WS_COLOR; c.fillRect(0, 0, W, W);
+  const fx = Math.floor(d.x), fy = Math.floor(d.y), R = Math.ceil(S / k) + 2;
+  c.setTransform(dpr * k * M.a / s, dpr * k * M.b / s, dpr * k * M.c / s, dpr * k * M.d / s, W / 2, W / 2);
+  c.translate(-(fx + .5), -(fy + .5));
+  c.imageSmoothingEnabled = false;
+  const x0 = clamp(fx - R, 0, DW), y0 = clamp(fy - R, 0, DH), x1 = clamp(fx + R + 1, 0, DW), y1 = clamp(fy + R + 1, 0, DH);
+  if (x1 > x0 && y1 > y0){ c.fillStyle = '#fff'; c.fillRect(x0, y0, x1 - x0, y1 - y0); c.drawImage(comp, x0, y0, x1 - x0, y1 - y0, x0, y0, x1 - x0, y1 - y0); }
+  c.lineWidth = 2.4 / k; c.strokeStyle = 'rgba(0,0,0,.85)'; c.strokeRect(fx, fy, 1, 1);
+  c.lineWidth = 1.2 / k; c.strokeStyle = '#fff'; c.strokeRect(fx - .16, fy - .16, 1.32, 1.32);
+  c.restore();
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const r = S / 2 - 4, cx = S / 2;
+  c.lineWidth = 8;
+  c.beginPath(); c.arc(cx, cx, r, Math.PI, 0); c.strokeStyle = rgbStr(color); c.stroke();
+  c.beginPath(); c.arc(cx, cx, r, 0, Math.PI); c.strokeStyle = rgbStr(op && op.prevColor ? op.prevColor : color); c.stroke();
+  c.lineWidth = 1; c.strokeStyle = 'rgba(0,0,0,.45)';
+  c.beginPath(); c.arc(cx, cx, r + 4.5, 0, Math.PI * 2); c.stroke();
+  c.beginPath(); c.arc(cx, cx, r - 4.5, 0, Math.PI * 2); c.stroke();
+}
+function startPick(id, type, sp, fromTool){
+  op = { kind: 'pick', pointerId: id, pointerType: type, fromTool, prevColor: { ...color } };
+  const d = toDoc(sp);
+  pickAt(d); showLoupe(sp, d);
+}
+function endPick(){
+  const o = op;
+  op = resumeOp; resumeOp = null;
+  hideLoupe();
+  if (o && o.fromTool && settings.picker.back && currentTool === 'picker' && prevTool && prevTool !== 'picker') setTool(prevTool);
+  requestRender();
+}
+// 指で長押し → スポイト
+function clearLongPress(){ if (lp){ clearTimeout(lp.timer); lp = null; } }
+function armLongPress(e, p){
+  clearLongPress();
+  if (!settings.picker.longPress || e.pointerType !== 'touch' || currentTool === 'picker') return;
+  lp = { id: e.pointerId, x: p.x, y: p.y, timer: setTimeout(fireLongPress, 450) };
+}
+function fireLongPress(){
+  const L = lp; lp = null;
+  if (!L) return;
+  const ptr = pointers.get(L.id);
+  if (!ptr || [...pointers.values()].filter(q => q.type === 'touch').length !== 1) return;
+  if (gesture && gesture.id === L.id) gesture = null;
+  if (op){
+    if (op.kind === 'poly'){ if (op.lastTouch && performance.now() - op.lastAdd < 900){ op.pts.pop(); } if (!op.pts.length) op = null; resumeOp = op; op = null; }
+    else if (op.kind === 'gradLine'){ op.a = op.b = null; op.pointerId = null; resumeOp = op; op = null; }
+    else if (op.pointerId === L.id) cancelOp();
+    else return;
+  }
+  startPick(L.id, 'touch', ptr, false);
+  requestRender();
+}
+// 右のパネル（iPad の縦画面など）：描き始めたら自動で閉じる。ピン留め中は閉じない
+const PIN_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5l-.8 5.2 3.3 3.3v1.8H7v-1.8l3.3-3.3z"/><path d="M12 13.8V21"/></svg>';
+const PIN_ON = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5h5l-.8 5.2 3.3 3.3v1.8H7v-1.8l3.3-3.3z"/><path d="M12 13.8V21" fill="none"/></svg>';
+let panelPinned = (() => { try { return localStorage.getItem('kakoi.panelPin') === '1'; } catch (e){ return false; } })();
+const drawerMQ = matchMedia('(max-width: 860px)');
+function syncPin(){
+  const b = $('#panelPin');
+  b.setAttribute('aria-pressed', String(panelPinned)); b.innerHTML = panelPinned ? PIN_ON : PIN_OFF;
+  b.title = panelPinned ? 'ピン留め中（描き始めても閉じません）' : 'ピン留めする（描き始めても閉じないようにする）';
+  b.setAttribute('aria-label', b.title);
+}
+$('#panelPin').addEventListener('click', () => { panelPinned = !panelPinned; try { localStorage.setItem('kakoi.panelPin', panelPinned ? '1' : '0'); } catch (e) {} syncPin(); toast(panelPinned ? 'パネルをピン留めしました' : 'ピン留めを外しました'); });
+$('#panelClose').addEventListener('click', () => setPanel(false));
+function autoCloseDrawer(){ if (drawerMQ.matches && !panelPinned && panelEl.classList.contains('open')) setPanel(false); }
+syncPin();
+
 /* ================= ツールと設定パネル ================= */
 function setTool(t){
   if (op && op.pointerId != null) return;
   if (op) cancelOp();
   if (xf && PAINT_TOOLS.has(t)) xfCommit();
+  if (t === 'picker' && currentTool !== 'picker') prevTool = currentTool;
   currentTool = t;
   for (const b of document.querySelectorAll('.tool[data-tool]')) b.setAttribute('aria-pressed', String(b.dataset.tool === t));
   renderToolPanel(); updateCursor(); requestRender();
