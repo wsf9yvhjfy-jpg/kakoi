@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <title>KAKOI 囲い塗りペイント</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -13,9 +14,6 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="KAKOI">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&display=swap" rel="stylesheet">
 <style>
 :root{
   box-sizing:border-box;
@@ -85,8 +83,9 @@ button{touch-action:manipulation}
 /* top bar */
 .topbar{display:flex;align-items:center;gap:2px;padding:0 8px 0 10px;background:var(--panel);border-bottom:1px solid var(--line);min-width:0}
 .brand{display:flex;align-items:center;gap:8px;margin-right:12px;white-space:nowrap}
-.mark{width:26px;height:26px;display:grid;place-items:center;background:var(--ink);color:var(--panel);border-radius:3px;font-family:"Dela Gothic One","Hiragino Sans",sans-serif;font-size:17px;line-height:1;padding-bottom:1px}
-.wordmark{font-family:"Dela Gothic One","Hiragino Sans",sans-serif;font-size:15px;letter-spacing:.05em;line-height:1}
+.mark{width:26px;height:26px;display:grid;place-items:center;background:var(--ink);color:var(--panel);border-radius:3px;flex:none}
+.mark svg{width:20px;height:auto;fill:currentColor;display:block}
+.wordmark{height:13px;width:auto;fill:currentColor;display:block;flex:none}
 .sub{color:var(--ink-2);font-size:11px}
 .tb{height:32px;padding:0 9px;border:0;border-radius:7px;background:transparent;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
 .tb:hover{background:var(--panel-2)}
@@ -339,7 +338,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 <body>
 <div id="app">
   <header class="topbar">
-    <div class="brand"><span class="mark" aria-hidden="true">囲</span><span class="wordmark">KAKOI</span><span class="sub">囲い塗りペイント 試作</span></div>
+    <div class="brand"><span class="mark" aria-hidden="true"><svg class="mark-g" viewBox="47 -755 908 757" aria-hidden="true"><path d="M47 -755H955V2H752V-8H250V2H47ZM752 -177V-592H250V-177H389Q328 -190 274 -197Q289 -221 296 -249H268V-377H303V-415H268V-537H303V-570H469V-537H535V-570H701V-537H732V-415H701V-377H732V-249H701V-200H535V-249H466Q465 -207 458 -177ZM468 -415V-377H535V-415Z"/></svg></span><svg class="wordmark" viewBox="40 -747 4527 757" role="img" aria-label="KAKOI"><path d="M562 0Q515 -85 406 -260L289 -144V0H40Q48 -194 48 -363Q48 -532 40 -726H289V-433Q473 -615 551 -726H875L560 -414Q630 -316 718 -201Q805 -86 876 0Z M1637 0Q1618 -57 1586 -143H1267L1217 0H966L1246 -726H1614L1896 0ZM1529 -299Q1491 -404 1451 -509L1427 -574Q1392 -483 1324 -299Z M2521 0Q2474 -85 2365 -260L2248 -144V0H1999Q2007 -194 2007 -363Q2007 -532 1999 -726H2248V-433Q2432 -615 2510 -726H2834L2519 -414Q2589 -316 2676 -201Q2764 -86 2835 0Z M2965 -369Q2965 -547 3072 -647Q3180 -747 3410 -747Q3641 -747 3748 -647Q3856 -547 3856 -369Q3856 -188 3749 -89Q3642 10 3410 10Q3181 10 3073 -90Q2965 -189 2965 -369ZM3619 -369Q3619 -457 3570 -500Q3521 -543 3410 -543Q3300 -543 3251 -500Q3202 -457 3202 -369Q3202 -280 3251 -237Q3300 -194 3410 -194Q3521 -194 3570 -236Q3619 -279 3619 -369Z M4567 -527Q4448 -533 4391 -534V-192Q4449 -193 4567 -199V0H3986V-199Q4101 -193 4161 -192V-534Q4101 -533 3986 -527V-726H4567Z"/></svg><span class="sub">囲い塗りペイント 試作</span></div>
     <span class="docname" id="docName" title="作品名">無題</span>
     <div class="popwrap"><button class="tb" id="btnFile" title="ファイル" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="tb-label">ファイル</span></button>
       <div class="pop left" id="fileMenu" role="menu" hidden>
@@ -617,7 +616,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.3（2026年10月13日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.3.1（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
