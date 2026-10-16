@@ -617,7 +617,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>見出しをドラッグ</dt><dd>色・ツール設定・レイヤー・タイムラインをウィンドウとして切り離し、好きな場所に置けます。ツールの列とタイムラインは点々をドラッグします</dd>
       <dt>ドッキング</dt><dd>ドラッグ中にほかのウィンドウの上下の端に重ねると縦に、左右の端に重ねると横に並んでくっつきます（青い線が出た位置）。右のパネルや画面の下（タイムライン）・左端（ツール）に重ねると元の場所に戻ります。まとまったウィンドウは上の細い点々でまとめて動かせ、間の境目で幅を変えられます</dd>
       <dt>Tab</dt><dd>パネルを一時的に隠して、画面を広く使います</dd>
-      <dt>ピン留め</dt><dd>右のパネル上部のピンを外すと、パネルは描き始めたときに自動で隠れます（右上のボタンで出せます）。ピンを押すと常に表示に戻ります</dd>
+      <dt>ピン留め</dt><dd>右のパネル上部のピンを外すと、パネルはキャンバスに触れたとき（ペン・指のどちらでも）に自動で隠れます（右上のボタンで出せます）。ピンを押すと常に表示に戻ります</dd>
       <dt>ウィンドウ</dt><dd>上のメニューで表示・非表示、すべて切り離す、配置を元に戻す</dd>
     </dl>
     <h3>表示</h3>
@@ -636,7 +636,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.5.1（2026年10月15日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.5.2（2026年10月15日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -2438,6 +2438,7 @@ viewEl.addEventListener('pointerdown', e => {
   const ae = document.activeElement;
   if (ae && ae !== document.body && ae.blur) ae.blur();
   closePops();
+  autoCloseDrawer();   // ピン留めしていない右のパネルは、ペン・指・マウスのどれでキャンバスに触れても隠す
   try { viewEl.setPointerCapture(e.pointerId); } catch (_) {}
   const p = evPt(e);
   ilog(`押す ${e.pointerType}#${e.pointerId}　ツール=${currentTool}　操作=${op ? op.kind : 'なし'}　指操作=${gesture ? gesture.kind : 'なし'}`);
