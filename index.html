@@ -269,6 +269,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 .wheel{position:relative;width:min(100%,236px);aspect-ratio:1;margin:0 auto;touch-action:none;cursor:crosshair}
 .wheel canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hlwrap{display:grid;grid-template-columns:minmax(0,1fr) 20px;gap:8px;height:156px}
+.hl-space{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:8px;font-size:11px;font-weight:700;color:var(--ink-2)}
 .okfield{position:relative;height:150px;border-radius:7px;overflow:hidden;touch-action:none;cursor:crosshair;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
 .okfield canvas,.oktrack canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .okrows{display:grid;gap:7px;margin-top:10px}
@@ -499,7 +500,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
           <div class="hue" id="hue"><canvas id="hueCanvas"></canvas><div class="knob" id="hueKnob"></div></div>
         </div>
         <div class="pm" id="pmWheel" hidden><div class="wheel" id="wheel"><canvas id="wheelCanvas"></canvas><div class="knob" id="wheelHueKnob"></div><div class="knob" id="wheelSvKnob"></div></div></div>
-        <div class="pm" id="pmHL" hidden><div class="hlwrap"><div class="hlfield" id="hlField"><canvas id="hlCanvas"></canvas><div class="knob big" id="hlKnob"></div></div><div class="hlsat" id="hlSat" title="鮮やかさ"><canvas id="hlSatCanvas"></canvas><div class="knob bar" id="hlSatKnob"></div></div></div></div>
+        <div class="pm" id="pmHL" hidden><div class="hlwrap"><div class="hlfield" id="hlField"><canvas id="hlCanvas"></canvas><div class="knob big" id="hlKnob"></div></div><div class="hlsat" id="hlSat" title="鮮やかさ"><canvas id="hlSatCanvas"></canvas><div class="knob bar" id="hlSatKnob"></div></div></div><div class="hl-space"><span>色空間</span><span class="pm-seg" id="hlSpace" role="group" aria-label="色相×明るさの色空間"><button type="button" data-s="hsl" title="ふつうの HSL">HSL</button><button type="button" data-s="okhsl" title="見た目の明るさがそろう OKHSL">OKHSL</button></span></div></div>
         <div class="pm" id="pmOK" hidden>
           <div class="okfield" id="okField" title="横＝彩度（S）、縦＝明るさ（L）"><canvas id="okCanvas"></canvas><div class="knob" id="okKnob"></div></div>
           <div class="okrows">
@@ -665,7 +666,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.8（2026年10月16日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.9（2026年10月16日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -3198,9 +3199,28 @@ function hsl2rgb(h, s, l){
   const f = t => { t = ((t % 1) + 1) % 1; return t < 1 / 6 ? p + (q - p) * 6 * t : t < .5 ? q : t < 2 / 3 ? p + (q - p) * (2 / 3 - t) * 6 : p; };
   return { r: f(h + 1 / 3) * 255, g: f(h) * 255, b: f(h - 1 / 3) * 255 };
 }
-let hlS = 1, hlH = 0, hlL = .5, hlDrawnS = -1, hlDragging = false;
+let hlS = 1, hlH = 0, hlL = .5, hlDrawnS = -1, hlDragging = false, hlGrid = null;
+let hlSpace = (() => { try { return localStorage.getItem('kakoi.hlSpace') === 'okhsl' ? 'okhsl' : 'hsl'; } catch (e){ return 'hsl'; } })();
+function hlRGB(h, s, l){ if (hlSpace === 'okhsl'){ const c = OK.toRGB(h, s, l); return { r: c[0], g: c[1], b: c[2] }; } return hsl2rgb(h, s, l); }
 function drawHLField(){
   const W = hlCanvas.width, H = hlCanvas.height; if (W < 2 || H < 2) return;
+  if (hlSpace === 'okhsl'){
+    // OKHSL：色相と明るさごとの値は彩度に関係しないので、一度計算して使い回す
+    const bw = Math.max(2, Math.round(W / 2)), bh = Math.max(2, Math.round(H / 2));
+    if (!hlGrid || hlGrid.bw !== bw || hlGrid.bh !== bh){
+      const hps = [], rps = [];
+      for (let x = 0; x < bw; x++){ const hp = OK.hueParams(x / bw), col = []; hps.push(hp); for (let y = 0; y < bh; y++) col.push(OK.rowParams(hp, 1 - y / (bh - 1))); rps.push(col); }
+      hlGrid = { bw, bh, hps, rps, buf: mk(bw, bh) };
+    }
+    const G = hlGrid, bc = G.buf.getContext('2d'), img = bc.createImageData(bw, bh), d = img.data, px = [0, 0, 0];
+    for (let x = 0; x < bw; x++) for (let y = 0; y < bh; y++){
+      OK.pixel(G.hps[x], G.rps[x][y], hlS, px);
+      const o = (y * bw + x) * 4; d[o] = px[0]; d[o + 1] = px[1]; d[o + 2] = px[2]; d[o + 3] = 255;
+    }
+    bc.putImageData(img, 0, 0);
+    const c = hlCanvas.getContext('2d'); c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(G.buf, 0, 0, W, H);
+    hlDrawnS = hlS; return;
+  }
   const c = hlCanvas.getContext('2d'), img = c.createImageData(W, H), d = img.data;
   for (let y = 0; y < H; y++){
     const l = 1 - y / (H - 1);
@@ -3211,19 +3231,29 @@ function drawHLField(){
 function drawHLSat(){
   const W = hlSatCanvas.width, H = hlSatCanvas.height; if (W < 1 || H < 2) return;
   const c = hlSatCanvas.getContext('2d');
+  if (hlSpace === 'okhsl'){
+    const hp = OK.hueParams(hlH), rp = OK.rowParams(hp, hlL), px = [0, 0, 0];
+    for (let y = 0; y < H; y++){ OK.pixel(hp, rp, 1 - y / (H - 1), px); c.fillStyle = `rgb(${px[0] | 0},${px[1] | 0},${px[2] | 0})`; c.fillRect(0, y, W, 1); }
+    return;
+  }
   for (let y = 0; y < H; y++){ const col = hsl2rgb(hlH, 1 - y / (H - 1), hlL); c.fillStyle = `rgb(${col.r | 0},${col.g | 0},${col.b | 0})`; c.fillRect(0, y, W, 1); }
 }
 function updateHL(force){
   if (!hlDragging){
-    const [h0, s0, l0] = rgb2hsl(color.r, color.g, color.b), defined = s0 > 1e-3 && l0 > 1e-3 && l0 < .999;
-    hlL = l0; hlH = defined ? h0 : hsv.h; if (defined) hlS = s0;
+    if (hlSpace === 'okhsl'){
+      const [h0, s0, l0] = OK.fromRGB(color.r, color.g, color.b);
+      hlL = l0; if (h0 !== null && s0 > 1e-3){ hlH = h0; hlS = s0; }
+    } else {
+      const [h0, s0, l0] = rgb2hsl(color.r, color.g, color.b), defined = s0 > 1e-3 && l0 > 1e-3 && l0 < .999;
+      hlL = l0; hlH = defined ? h0 : hsv.h; if (defined) hlS = s0;
+    }
   }
   if (force || Math.abs(hlDrawnS - hlS) > .003) drawHLField();
   drawHLSat();
   const k = $('#hlKnob'); k.style.left = (hlH * 100) + '%'; k.style.top = ((1 - hlL) * 100) + '%'; k.style.background = toHex(color);
   $('#hlSatKnob').style.top = ((1 - hlS) * 100) + '%';
 }
-function setFromHL(){ const c = hsl2rgb(hlH, hlS, hlL); color = { r: c.r, g: c.g, b: c.b }; toHSV(c.r, c.g, c.b); hsv = { h: hlH, s: HSV[1], v: HSV[2] }; syncColor(false); }
+function setFromHL(){ const c = hlRGB(hlH, hlS, hlL); color = { r: c.r, g: c.g, b: c.b }; toHSV(c.r, c.g, c.b); hsv = { h: hlSpace === 'hsl' ? hlH : (HSV[1] > .001 ? HSV[0] : hsv.h), s: HSV[1], v: HSV[2] }; syncColor(false); }
 function dragNorm(elx, onMove){
   elx.addEventListener('pointerdown', e => {
     elx.setPointerCapture(e.pointerId); hlDragging = true;
@@ -3415,6 +3445,16 @@ for (const [id, k, max] of [['#okNH', 'H', 360], ['#okNS', 'S', 100], ['#okNL', 
     okDragging = true; setFromOK(); okDragging = false; updateOK(false);
   });
 }
+function setHLSpace(sp){
+  hlSpace = sp;
+  try { localStorage.setItem('kakoi.hlSpace', sp); } catch (e) {}
+  for (const b of $('#hlSpace').children) b.setAttribute('aria-pressed', String(b.dataset.s === sp));
+  $('#hlField').title = sp === 'okhsl' ? '横＝色相、縦＝明るさ（OKHSL：見た目の明るさがそろう）' : '横＝色相、縦＝明るさ（HSL）';
+  hlDrawnS = -1;
+  if (pickMode === 'hl') updateHL(true);
+}
+for (const b of $('#hlSpace').children) b.addEventListener('click', () => setHLSpace(b.dataset.s));
+for (const b of $('#hlSpace').children) b.setAttribute('aria-pressed', String(b.dataset.s === hlSpace));
 // --- スウォッチ（複数のリスト。ASE・ACO・GPL で書き出し・読み込み） ---
 const DEFAULT_SWATCHES = ['#1B1B1D', '#F2EFE8', '#8C8C8A', '#C8553D', '#E9B44C', '#F2D27A', '#2E5E4E', '#6A994E', '#3D55E0', '#2C4A6B', '#7A4E2D', '#B07BAC'];
 const PAL_KEY = 'kakoi.palettes', PAL_MAX = 256;
