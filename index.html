@@ -98,6 +98,8 @@ button{touch-action:manipulation}
 .vsep{width:1px;height:20px;background:var(--line);margin:0 6px}
 .panel-toggle{display:none}
 
+.docbadge{flex:none;margin:0 8px 0 -2px;padding:1px 6px;border:1px solid var(--line);border-radius:5px;background:var(--field);color:var(--ink-2);font-size:10px;font-weight:700;letter-spacing:.04em;line-height:16px;cursor:help}
+.docbadge[hidden]{display:none}
 .docname{font-size:12px;color:var(--ink-2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-right:8px;padding-left:12px;border-left:1px solid var(--line);line-height:20px}
 .popwrap{position:relative}
 .pop{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.18);padding:4px;min-width:124px;display:flex;flex-direction:column}
@@ -368,7 +370,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
 <div id="app">
   <header class="topbar">
     <div class="brand"><span class="mark" aria-hidden="true"><svg class="mark-g" viewBox="47 -755 908 757" aria-hidden="true"><path d="M47 -755H955V2H752V-8H250V2H47ZM752 -177V-592H250V-177H389Q328 -190 274 -197Q289 -221 296 -249H268V-377H303V-415H268V-537H303V-570H469V-537H535V-570H701V-537H732V-415H701V-377H732V-249H701V-200H535V-249H466Q465 -207 458 -177ZM468 -415V-377H535V-415Z"/></svg></span><svg class="wordmark" viewBox="40 -747 4527 757" role="img" aria-label="KAKOI"><path d="M562 0Q515 -85 406 -260L289 -144V0H40Q48 -194 48 -363Q48 -532 40 -726H289V-433Q473 -615 551 -726H875L560 -414Q630 -316 718 -201Q805 -86 876 0Z M1637 0Q1618 -57 1586 -143H1267L1217 0H966L1246 -726H1614L1896 0ZM1529 -299Q1491 -404 1451 -509L1427 -574Q1392 -483 1324 -299Z M2521 0Q2474 -85 2365 -260L2248 -144V0H1999Q2007 -194 2007 -363Q2007 -532 1999 -726H2248V-433Q2432 -615 2510 -726H2834L2519 -414Q2589 -316 2676 -201Q2764 -86 2835 0Z M2965 -369Q2965 -547 3072 -647Q3180 -747 3410 -747Q3641 -747 3748 -647Q3856 -547 3856 -369Q3856 -188 3749 -89Q3642 10 3410 10Q3181 10 3073 -90Q2965 -189 2965 -369ZM3619 -369Q3619 -457 3570 -500Q3521 -543 3410 -543Q3300 -543 3251 -500Q3202 -457 3202 -369Q3202 -280 3251 -237Q3300 -194 3410 -194Q3521 -194 3570 -236Q3619 -279 3619 -369Z M4567 -527Q4448 -533 4391 -534V-192Q4449 -193 4567 -199V0H3986V-199Q4101 -193 4161 -192V-534Q4101 -533 3986 -527V-726H4567Z"/></svg><span class="sub">囲い塗りペイント 試作</span></div>
-    <span class="docname" id="docName" title="作品名">無題</span>
+    <span class="docname" id="docName" title="作品名">無題</span><button class="docbadge" type="button" id="docBadge" hidden>P3</button>
     <div class="popwrap"><button class="tb" id="btnFile" title="ファイル" aria-haspopup="menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="tb-label">ファイル</span></button>
       <div class="pop left" id="fileMenu" role="menu" hidden>
         <button role="menuitem" data-act="new">新規…</button>
@@ -662,11 +664,11 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     <h3>ファイル</h3>
     <dl>
       <dt>⌘S</dt><dd>保存（KAKOI 形式）。2回目からは同じファイルに上書きします。⇧⌘S で別名で保存</dd>
-      <dt>⌘O</dt><dd>KAKOI、PSD、HEAVYPAINT（.hp3）、ZIP、PNG・JPEG・WebP を開きます。キャンバスへのドラッグ＆ドロップでも開けます。.hp3 はレイヤーを保ったまま開くので、そのまま PSD で書き出せます</dd>
+      <dt>⌘O</dt><dd>KAKOI、PSD、HEAVYPAINT（.hp3）、ZIP、PNG・JPEG・WebP を開きます。キャンバスへのドラッグ＆ドロップでも開けます。.hp3 はレイヤーを保ったまま開くので、そのまま PSD で書き出せます。色は HEAVYPAINT の Display P3 の数値のまま読み込み、書き出す PSD・PNG にも P3 の色情報を付けます（作品名の横に「P3」と表示。KAKOI の画面上では少しくすんで見えます）</dd>
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.0（2026年11月17日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.1（2026年11月18日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -1221,6 +1223,7 @@ function resetDoc(w, h){
   anim.cur = 0; anim.frames = 24; anim.fps = 12; anim.rangeIn = 0; anim.rangeOut = null; lastNewCel = null; memWarned = false;
   allocScratch();
   undoStack.length = 0; redoStack.length = 0;
+  setDocICC(null);
 }
 function finishDoc(ls, name){
   layers = ls; active = ls[ls.length - 1];
@@ -1234,6 +1237,59 @@ function newDocument(w, h, bg){
   const B = makeLayer('背景');
   if (bg){ B.ctx.fillStyle = bg; B.ctx.fillRect(0, 0, w, h); }
   finishDoc([B, makeLayer()], '無題');
+}
+// --- 絵の色のプロファイル（Display P3 など）。色の数値はそのまま持ち、書き出す PSD・PNG にだけ付ける ---
+let docICC = null;
+function setDocICC(icc){
+  const nm = icc && icc.length >= 132 ? iccName(icc) : '';
+  docICC = icc && icc.length >= 132 && !/srgb/i.test(nm) ? { name: nm || '埋め込みプロファイル', bytes: icc } : null;
+  const b = $('#docBadge');
+  b.hidden = !docICC;
+  if (docICC){
+    b.textContent = /p3/i.test(docICC.name) ? 'P3' : 'ICC';
+    b.title = `この絵の色は「${docICC.name}」の数値のまま扱っています。KAKOI の画面では少しくすんで見えますが、PSD・PNG で書き出すとこの色情報が付き、元のアプリと同じ色になります`;
+  }
+}
+$('#docBadge').addEventListener('click', () => { if (docICC) toast($('#docBadge').title); });
+// 無圧縮の zlib（色のプロファイルのような小さなデータを PNG に入れるため）
+function zlibStore(u8){
+  const n = u8.length, blocks = Math.max(1, Math.ceil(n / 65535)), out = new Uint8Array(2 + n + blocks * 5 + 4);
+  out[0] = 0x78; out[1] = 0x01;
+  let o = 2;
+  for (let i = 0; i < blocks; i++){
+    const st = i * 65535, len = Math.min(65535, n - st);
+    out[o++] = i === blocks - 1 ? 1 : 0; out[o++] = len & 255; out[o++] = len >> 8; out[o++] = ~len & 255; out[o++] = (~len >> 8) & 255;
+    out.set(u8.subarray(st, st + len), o); o += len;
+  }
+  let a = 1, b = 0;
+  for (let i = 0; i < n; i++){ a = (a + u8[i]) % 65521; b = (b + a) % 65521; }
+  out[o++] = b >>> 8; out[o++] = b & 255; out[o++] = a >>> 8; out[o++] = a & 255;
+  return out;
+}
+// 書き出す PNG に、絵の色のプロファイルを入れる（ブラウザが付けた色の情報は外して入れ替える）
+function pngWithICC(u8){
+  if (!docICC || u8.length < 33 || u8[0] !== 0x89) return u8;
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), parts = [u8.subarray(0, 8)];
+  const key = new TextEncoder().encode((docICC.name.replace(/[^\x20-\x7e]/g, '').trim() || 'ICC Profile').slice(0, 79));
+  const z = zlibStore(docICC.bytes), body = new Uint8Array(key.length + 2 + z.length);
+  body.set(key, 0); body.set(z, key.length + 2);
+  const chunk = (type, data) => {
+    const c = new Uint8Array(12 + data.length), cv = new DataView(c.buffer);
+    cv.setUint32(0, data.length); for (let i = 0; i < 4; i++) c[4 + i] = type.charCodeAt(i);
+    c.set(data, 8); cv.setUint32(8 + data.length, crc32(c.subarray(4, 8 + data.length)));
+    return c;
+  };
+  let p = 8;
+  while (p + 12 <= u8.length){
+    const len = dv.getUint32(p), type = String.fromCharCode(u8[p + 4], u8[p + 5], u8[p + 6], u8[p + 7]), end = p + 12 + len;
+    if (!['iCCP', 'sRGB', 'gAMA', 'cHRM'].includes(type)) parts.push(u8.subarray(p, end));
+    if (type === 'IHDR') parts.push(chunk('iCCP', body));
+    p = end;
+    if (type === 'IEND') break;
+  }
+  const out = new Uint8Array(parts.reduce((t, x) => t + x.length, 0));
+  let o = 0; for (const x of parts){ out.set(x, o); o += x.length; }
+  return out;
 }
 function setDocName(n){
   docName = (n || '').trim() || '無題';
@@ -3939,7 +3995,9 @@ function buildPsd(){
   w.sig('8BPS'); w.u16(1); for (let i = 0; i < 6; i++) w.u8(0);
   w.u16(globalAlpha ? 4 : 3); w.u32(H); w.u32(W); w.u16(8); w.u16(3);
   w.u32(0); // カラーモードデータ
-  w.u32(0); // 画像リソース
+  w.section(1, () => {   // 画像リソース：色のプロファイル（ICC）
+    if (docICC){ w.sig('8BIM'); w.u16(1039); w.u16(0); w.u32(docICC.bytes.length); w.bytes(docICC.bytes); if (docICC.bytes.length & 1) w.u8(0); }
+  });
   w.section(2, () => {
     w.section(4, () => {
       w.i16(globalAlpha ? -recs.length : recs.length);
@@ -3991,7 +4049,19 @@ function readPsdOwn(u8){
   const ver = r.u16(); r.skip(6);
   const nch = r.u16(), H = r.u32(), W = r.u32(), depth = r.u16(), mode = r.u16();
   if (ver !== 1 || depth !== 8 || mode !== 3) throw UNSUPPORTED;
-  r.skip(r.u32()); r.skip(r.u32());
+  r.skip(r.u32());
+  let icc = null;
+  { // 画像リソースから色のプロファイル（ICC）を読む
+    const rl = r.u32(), re = r.p + rl;
+    while (r.p + 12 <= re){
+      if (r.sig() !== '8BIM') break;
+      const id = r.u16(), nl = r.u8(); r.skip(nl + ((nl + 1) & 1));
+      const sz = r.u32();
+      if (id === 1039) icc = u8.slice(r.p, r.p + sz);
+      r.skip(sz + (sz & 1));
+    }
+    r.p = re;
+  }
   const lmLen = r.u32(), lmEnd = r.p + lmLen, recs = [];
   if (lmLen > 0){
     const liLen = r.u32();
@@ -4054,7 +4124,7 @@ function readPsdOwn(u8){
     } else throw UNSUPPORTED;
     merged = planes;
   }
-  return { W, H, recs, merged };
+  return { W, H, recs, merged, icc };
 }
 function psdRecCanvas(rec){
   const w = rec.right - rec.left, h = rec.bottom - rec.top;
@@ -4096,6 +4166,7 @@ async function openPsdBytes(u8, name){
   }
   flat.reverse();
   resetDoc(W, H);
+  setDocICC(P.icc);
   const ls = [];
   if (!flat.length){
     const L = makeLayer('背景');
@@ -4176,6 +4247,7 @@ async function buildKakoi(){
     const first = cels.find(c => c.frame === 0) || cels[0];
     meta.layers.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, anim: L.anim, file: first ? first.file : null, cels });
   }
+  if (docICC){ let b = ''; for (let i = 0; i < docICC.bytes.length; i += 0x8000) b += String.fromCharCode(...docICC.bytes.subarray(i, i + 0x8000)); meta.icc = { name: docICC.name, data: btoa(b) }; }
   files.push({ name: 'preview.png', data: await blobBytes(await canvasBlob(comp)), store: true });
   files.unshift({ name: 'kakoi.json', data: new TextEncoder().encode(JSON.stringify(meta, null, 1)) });
   return makeZip(files);
@@ -4194,6 +4266,7 @@ async function openKakoiEntries(ents, name){
     celLists.push(out);
   }
   resetDoc(W, H);
+  if (meta.icc && typeof meta.icc.data === 'string'){ try { setDocICC(b64bytes(meta.icc.data)); } catch (e) {} }
   readAnimMeta(meta.anim);
   const ls = meta.layers.map((info, i) => {
     const L = makeLayer(String(info.name || `レイヤー ${i + 1}`), true);
@@ -4286,8 +4359,9 @@ function exportPSD(){
 function exportPNG(){
   return withSaving('PNGを書き出しています…', async () => {
     compose(); qCompose = false;
-    const blob = await canvasBlob(comp);
+    let blob = await canvasBlob(comp);
     if (!blob) throw new Error('PNGを作れませんでした');
+    if (docICC) blob = new Blob([pngWithICC(await blobBytes(blob))], { type: 'image/png' });
     const r = await saveBlobAs(blob, baseFileName(), 'png');
     if (r.ok) toast('PNGを書き出しました');
   });
@@ -4346,7 +4420,7 @@ async function exportSequence(o, dir){
   const keep = anim.cur, name = baseFileName(), pad = n => String(n).padStart(o.digits, '0');
   const W2 = Math.max(1, Math.round(DW * o.scale)), H2 = Math.max(1, Math.round(DH * o.scale));
   const out = mk(W2, H2), oc = out.getContext('2d'); oc.imageSmoothingQuality = 'high';
-  const enc = async src => { oc.clearRect(0, 0, W2, H2); oc.drawImage(src, 0, 0, W2, H2); return blobBytes(await canvasBlob(out)); };
+  const enc = async src => { oc.clearRect(0, 0, W2, H2); oc.drawImage(src, 0, 0, W2, H2); return pngWithICC(await blobBytes(await canvasBlob(out))); };
   const files = [], count = o.to - o.from + 1;
   try {
     if (o.what !== 'layers'){
@@ -4425,6 +4499,7 @@ async function exportSequence(o, dir){
 }
 
 // --- HEAVYPAINT（.hp3）の読み込み ---
+// 色は変換せず、HEAVYPAINT の数値のまま読み込む。色のプロファイル（Display P3）は絵に持たせ、書き出す PSD・PNG に付ける。
 // .hp3 の中身（実物の解析結果）：JSON を二重に文字列化したテキスト。
 //   width・height＝キャンバスの大きさ、color＝背景色、layers[]＝下のレイヤーから上の順。
 //   各レイヤーの絵は screenshot に PNG（base64）で入っていて、上下反転・プリマルチプライド・Display P3。
@@ -4484,29 +4559,12 @@ function iccName(b){
   } catch (e) {}
   return '';
 }
-// Display P3 → sRGB（見た目を保つ変換。sRGB に入りきらない鮮やかさは一番近い色に収める）
-let p3Lut = null;
-function p3ToSrgbLut(){
-  if (p3Lut) return p3Lut;
-  const lin = new Float32Array(256), N = 16384, enc = new Uint8Array(N + 1);
-  for (let i = 0; i < 256; i++){ const v = i / 255; lin[i] = v <= .04045 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }
-  for (let i = 0; i <= N; i++){ const v = i / N; enc[i] = Math.round((v <= .0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - .055) * 255); }
-  return (p3Lut = { lin, enc, N });
-}
-function p3ToSrgb(r, g, b, out){
-  const { lin, enc, N } = p3ToSrgbLut(), R = lin[r], G = lin[g], B = lin[b];
-  const q = v => enc[v <= 0 ? 0 : v >= 1 ? N : Math.round(v * N)];
-  out[0] = q(1.2249401 * R - .2249404 * G);
-  out[1] = q(-.0420569 * R + 1.0420571 * G);
-  out[2] = q(-.0196376 * R - .0786361 * G + 1.0982735 * B);
-  return out;
-}
 function b64bytes(s){
   const bin = atob(s), u8 = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
   return u8;
 }
-// 1枚のレイヤー画像 → 上下を戻し、アルファを外し、必要なら sRGB に変換した ImageData
+// 1枚のレイヤー画像 → 上下を戻し、アルファを外した ImageData（色の数値はそのまま）
 async function hp3LayerImage(uri, state){
   const bytes = b64bytes(uri.slice(uri.indexOf(',') + 1));
   let dec = await decodePngRaw(bytes);
@@ -4518,8 +4576,8 @@ async function hp3LayerImage(uri, state){
     dec = { w: c.width, h: c.height, rgba: x.getImageData(0, 0, c.width, c.height).data, icc: null };
     state.approx = true;
   }
-  if (state.p3 === null && dec.icc){ const nm = iccName(dec.icc); state.p3 = /p3/i.test(nm); if (!state.p3 && !/srgb/i.test(nm)) state.otherIcc = nm || '不明'; }
-  const { w, h, rgba } = dec, img = new ImageData(w, h), d = img.data, conv = state.p3 === true, tmp = [0, 0, 0];
+  if (!state.icc && dec.icc) state.icc = dec.icc;
+  const { w, h, rgba } = dec, img = new ImageData(w, h), d = img.data;
   for (let y = 0; y < h; y++){
     let s = (h - 1 - y) * w * 4, o = y * w * 4;
     for (let x = 0; x < w; x++, s += 4, o += 4){
@@ -4527,7 +4585,6 @@ async function hp3LayerImage(uri, state){
       if (!a) continue;
       let r = rgba[s], g = rgba[s + 1], b = rgba[s + 2];
       if (a < 255){ const k = 255 / a; r = Math.min(255, Math.round(r * k)); g = Math.min(255, Math.round(g * k)); b = Math.min(255, Math.round(b * k)); }
-      if (conv){ p3ToSrgb(r, g, b, tmp); r = tmp[0]; g = tmp[1]; b = tmp[2]; }
       d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = a;
     }
   }
@@ -4540,7 +4597,7 @@ async function openHp3(f, name){
   if (!data || typeof data !== 'object' || !Array.isArray(data.layers) || !(+data.width > 0) || !(+data.height > 0)) throw new Error('HEAVYPAINT のファイルとして読み取れません');
   const W0 = Math.round(+data.width), H0 = Math.round(+data.height);
   const k = fitScale(W0, H0), W = Math.max(1, Math.round(W0 * k)), H = Math.max(1, Math.round(H0 * k));
-  const state = { p3: null, otherIcc: '', approx: false };
+  const state = { icc: null, approx: false };
   const near = (a, b) => Math.abs((+a || 0) - b) < 1e-6;
   const hasShot = L => L && typeof L.screenshot === 'string' && L.screenshot.includes(',');
   const total = data.layers.length;
@@ -4552,9 +4609,9 @@ async function openHp3(f, name){
   const col = Array.isArray(data.color) ? data.color : [255, 255, 255, 255];
   let [br, bg, bb] = [0, 1, 2].map(i => clamp(Math.round(+col[i] || 0), 0, 255)), ba = col.length > 3 ? +col[3] : 255;
   ba = clamp(ba > 1 ? ba / 255 : ba, 0, 1);
-  if (state.p3 === true) [br, bg, bb] = p3ToSrgb(br, bg, bb, [0, 0, 0]);
 
   resetDoc(W, H);
+  setDocICC(state.icc);
   const ls = [], adjusted = [];
   let oddBlend = 0, clipN = 0, sizeOdd = 0, failed = 0;
   const B = makeLayer('背景色'); B.anim = false;
@@ -4586,15 +4643,14 @@ async function openHp3(f, name){
   nameSeq = ls.length;
   finishDoc(ls, name);
   const notes = [];
-  if (state.p3) notes.push('色を Display P3 から sRGB に変換');
-  if (state.otherIcc) notes.push(`色のプロファイル「${state.otherIcc}」は変換せずに読み込み`);
+  if (docICC) notes.push(`色は「${docICC.name}」のまま（書き出す PSD・PNG にこの色情報を付けます）`);
   if (k < 1) notes.push(`大きいため ${Math.round(k * 100)}% に縮小`);
   if (oddBlend) notes.push(`未対応の合成モード ${oddBlend} 枚は通常に変更`);
   if (clipN) notes.push(`クリッピング ${clipN} 枚は設定を引き継ぎ（未検証）`);
   if (adjusted.length) notes.push(`色調補正・移動などの設定は反映されません（${adjusted.slice(0, 3).join('、')}${adjusted.length > 3 ? ' ほか' : ''}）`);
   if (sizeOdd) notes.push(`大きさの違うレイヤー ${sizeOdd} 枚は左上に合わせて配置`);
   if (failed) notes.push(`読み込めなかったレイヤー ${failed} 枚は空のまま`);
-  if (state.approx) notes.push('一部のレイヤーは色の数値が少し変わることがあります');
+  if (state.approx) notes.push('一部のレイヤーは色の数値が少し変わることがあります（色のプロファイルも読み取れません）');
   const ref = data.reference;
   if (ref && typeof ref === 'object' && Object.values(ref).some(v => typeof v === 'string' && /\/|http/.test(v))) notes.push('参考画像はファイルに含まれていないため読み込めません');
   toast(`「${name}」を開きました（レイヤー ${total} 枚＋背景色）` + (notes.length ? `。${notes.join('、')}` : ''));
@@ -4700,7 +4756,7 @@ async function doSave(){
       for (const k of sortedKeys(L)){ const c = L.cels.get(k); await celBytes(c); bufs.push(c.buf); cels.push({ frame: k, idx: bufs.length - 1 }); }
       lm.push({ name: L.name, visible: L.visible, opacity: L.opacity, blend: L.blend, lock: L.lock, clip: L.clip, anim: L.anim, cels });
     }
-    const meta = { v: 3, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, anim: animMeta(), layers: lm };
+    const meta = { v: 3, w: DW, h: DH, active: layers.indexOf(active), nameSeq, docName, fileDirty, anim: animMeta(), layers: lm, icc: docICC ? docICC.bytes : null };
     try { await IDB.put('current', { meta, bufs, handle: fileHandle }); }
     catch (e){ await IDB.put('current', { meta, bufs }); }
     setStatus('この端末に自動保存済み');
@@ -4714,8 +4770,8 @@ async function restore(){
     if (!rec || !rec.meta || !rec.bufs || !rec.meta.layers || !rec.meta.layers.length) return false;
     const m = rec.meta;
     resetDoc(m.w, m.h);
+    if (m.icc){ try { setDocICC(new Uint8Array(m.icc)); } catch (e) {} }
     const ls = [];
-    void 0;
     readAnimMeta(m.anim);
     for (let i = 0; i < m.layers.length; i++){
       const info = m.layers[i], L = makeLayer(info.name, true);
