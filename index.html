@@ -662,11 +662,11 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
     <h3>ファイル</h3>
     <dl>
       <dt>⌘S</dt><dd>保存（KAKOI 形式）。2回目からは同じファイルに上書きします。⇧⌘S で別名で保存</dd>
-      <dt>⌘O</dt><dd>KAKOI、PSD、ZIP、PNG・JPEG・WebP を開きます。キャンバスへのドラッグ＆ドロップでも開けます</dd>
+      <dt>⌘O</dt><dd>KAKOI、PSD、HEAVYPAINT（.hp3）、ZIP、PNG・JPEG・WebP を開きます。キャンバスへのドラッグ＆ドロップでも開けます。.hp3 はレイヤーを保ったまま開くので、そのまま PSD で書き出せます</dd>
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 4.9（2026年10月16日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.0（2026年11月17日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -4424,6 +4424,182 @@ async function exportSequence(o, dir){
   }
 }
 
+// --- HEAVYPAINT（.hp3）の読み込み ---
+// .hp3 の中身（実物の解析結果）：JSON を二重に文字列化したテキスト。
+//   width・height＝キャンバスの大きさ、color＝背景色、layers[]＝下のレイヤーから上の順。
+//   各レイヤーの絵は screenshot に PNG（base64）で入っていて、上下反転・プリマルチプライド・Display P3。
+const HP3_BLEND = { 0: 'source-over', 1: 'multiply' };   // 1 は実物の絵の内容から「乗算」と判断
+const pyTruthy = v => !(v == null || v === false || v === 0 || v === '' || (Array.isArray(v) && !v.length) || (typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).length));
+async function inflateZ(u8){
+  const s = new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate'));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+// PNG を「保存されている数値そのまま」で読む（ブラウザの読み込みは色変換やアルファの掛け直しで数値が変わるため）
+async function decodePngRaw(u8){
+  if (typeof DecompressionStream === 'undefined' || u8.length < 33 || u8[0] !== 0x89 || u8[1] !== 0x50) return null;
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), idat = [];
+  let p = 8, w = 0, h = 0, depth = 0, ctype = 0, inter = 0, icc = null, idatLen = 0;
+  while (p + 8 <= u8.length){
+    const len = dv.getUint32(p), type = String.fromCharCode(u8[p + 4], u8[p + 5], u8[p + 6], u8[p + 7]), d = u8.subarray(p + 8, p + 8 + len);
+    if (type === 'IHDR'){ w = dv.getUint32(p + 8); h = dv.getUint32(p + 12); depth = d[8]; ctype = d[9]; inter = d[12]; }
+    else if (type === 'iCCP'){ const z = d.indexOf(0); if (z > 0 && d[z + 1] === 0){ try { icc = await inflateZ(d.subarray(z + 2)); } catch (e) {} } }
+    else if (type === 'IDAT'){ idat.push(d); idatLen += d.length; }
+    else if (type === 'IEND') break;
+    p += 12 + len;
+  }
+  if (!w || !h || depth !== 8 || (ctype !== 6 && ctype !== 2) || inter) return null;
+  const z = new Uint8Array(idatLen); let o = 0;
+  for (const d of idat){ z.set(d, o); o += d.length; }
+  const raw = await inflateZ(z), bpp = ctype === 6 ? 4 : 3, stride = w * bpp;
+  if (raw.length < h * (stride + 1)) throw new Error('PNG が壊れています');
+  const px = new Uint8Array(h * stride);
+  for (let y = 0, q = 0; y < h; y++){
+    const ft = raw[q++], r = y * stride, u = r - stride;
+    for (let i = 0; i < stride; i++, q++){
+      const a = i >= bpp ? px[r + i - bpp] : 0, b = y ? px[u + i] : 0, c = (y && i >= bpp) ? px[u + i - bpp] : 0;
+      let v = raw[q];
+      if (ft === 1) v += a;
+      else if (ft === 2) v += b;
+      else if (ft === 3) v += (a + b) >> 1;
+      else if (ft === 4){ const pp = a + b - c, pa = Math.abs(pp - a), pb = Math.abs(pp - b), pc = Math.abs(pp - c); v += (pa <= pb && pa <= pc) ? a : pb <= pc ? b : c; }
+      px[r + i] = v;
+    }
+  }
+  let rgba = px;
+  if (bpp === 3){ rgba = new Uint8Array(w * h * 4); for (let i = 0, j = 0; i < w * h; i++, j += 3){ rgba[i * 4] = px[j]; rgba[i * 4 + 1] = px[j + 1]; rgba[i * 4 + 2] = px[j + 2]; rgba[i * 4 + 3] = 255; } }
+  return { w, h, rgba, icc };
+}
+// ICC プロファイルの名前（desc）を読む
+function iccName(b){
+  try {
+    if (!b || b.length < 132) return '';
+    const dv = new DataView(b.buffer, b.byteOffset, b.byteLength), n = dv.getUint32(128);
+    for (let i = 0; i < n && 144 + i * 12 <= b.length; i++){
+      const e = 132 + i * 12;
+      if (String.fromCharCode(b[e], b[e + 1], b[e + 2], b[e + 3]) !== 'desc') continue;
+      const off = dv.getUint32(e + 4), t = String.fromCharCode(b[off], b[off + 1], b[off + 2], b[off + 3]);
+      if (t === 'desc'){ const len = dv.getUint32(off + 8); return String.fromCharCode(...b.subarray(off + 12, off + 12 + Math.min(len, 200))).replace(/\0+$/, ''); }
+      if (t === 'mluc'){ const len = dv.getUint32(off + 20), so = off + dv.getUint32(off + 24); let s = ''; for (let k = 0; k + 1 < Math.min(len, 400); k += 2) s += String.fromCharCode(dv.getUint16(so + k)); return s; }
+    }
+  } catch (e) {}
+  return '';
+}
+// Display P3 → sRGB（見た目を保つ変換。sRGB に入りきらない鮮やかさは一番近い色に収める）
+let p3Lut = null;
+function p3ToSrgbLut(){
+  if (p3Lut) return p3Lut;
+  const lin = new Float32Array(256), N = 16384, enc = new Uint8Array(N + 1);
+  for (let i = 0; i < 256; i++){ const v = i / 255; lin[i] = v <= .04045 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }
+  for (let i = 0; i <= N; i++){ const v = i / N; enc[i] = Math.round((v <= .0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - .055) * 255); }
+  return (p3Lut = { lin, enc, N });
+}
+function p3ToSrgb(r, g, b, out){
+  const { lin, enc, N } = p3ToSrgbLut(), R = lin[r], G = lin[g], B = lin[b];
+  const q = v => enc[v <= 0 ? 0 : v >= 1 ? N : Math.round(v * N)];
+  out[0] = q(1.2249401 * R - .2249404 * G);
+  out[1] = q(-.0420569 * R + 1.0420571 * G);
+  out[2] = q(-.0196376 * R - .0786361 * G + 1.0982735 * B);
+  return out;
+}
+function b64bytes(s){
+  const bin = atob(s), u8 = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  return u8;
+}
+// 1枚のレイヤー画像 → 上下を戻し、アルファを外し、必要なら sRGB に変換した ImageData
+async function hp3LayerImage(uri, state){
+  const bytes = b64bytes(uri.slice(uri.indexOf(',') + 1));
+  let dec = await decodePngRaw(bytes);
+  if (!dec){
+    // 想定外の PNG（16bit など）はブラウザに読ませる
+    const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/png' }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+    const c = mk(bmp.width, bmp.height), x = c.getContext('2d', { willReadFrequently: true });
+    x.drawImage(bmp, 0, 0); if (bmp.close) bmp.close();
+    dec = { w: c.width, h: c.height, rgba: x.getImageData(0, 0, c.width, c.height).data, icc: null };
+    state.approx = true;
+  }
+  if (state.p3 === null && dec.icc){ const nm = iccName(dec.icc); state.p3 = /p3/i.test(nm); if (!state.p3 && !/srgb/i.test(nm)) state.otherIcc = nm || '不明'; }
+  const { w, h, rgba } = dec, img = new ImageData(w, h), d = img.data, conv = state.p3 === true, tmp = [0, 0, 0];
+  for (let y = 0; y < h; y++){
+    let s = (h - 1 - y) * w * 4, o = y * w * 4;
+    for (let x = 0; x < w; x++, s += 4, o += 4){
+      const a = rgba[s + 3];
+      if (!a) continue;
+      let r = rgba[s], g = rgba[s + 1], b = rgba[s + 2];
+      if (a < 255){ const k = 255 / a; r = Math.min(255, Math.round(r * k)); g = Math.min(255, Math.round(g * k)); b = Math.min(255, Math.round(b * k)); }
+      if (conv){ p3ToSrgb(r, g, b, tmp); r = tmp[0]; g = tmp[1]; b = tmp[2]; }
+      d[o] = r; d[o + 1] = g; d[o + 2] = b; d[o + 3] = a;
+    }
+  }
+  return img;
+}
+async function openHp3(f, name){
+  setStatus('HEAVYPAINT のファイルを読み込んでいます…');
+  let data;
+  try { data = JSON.parse(await f.text()); if (typeof data === 'string') data = JSON.parse(data); } catch (e){ data = null; }
+  if (!data || typeof data !== 'object' || !Array.isArray(data.layers) || !(+data.width > 0) || !(+data.height > 0)) throw new Error('HEAVYPAINT のファイルとして読み取れません');
+  const W0 = Math.round(+data.width), H0 = Math.round(+data.height);
+  const k = fitScale(W0, H0), W = Math.max(1, Math.round(W0 * k)), H = Math.max(1, Math.round(H0 * k));
+  const state = { p3: null, otherIcc: '', approx: false };
+  const near = (a, b) => Math.abs((+a || 0) - b) < 1e-6;
+  const hasShot = L => L && typeof L.screenshot === 'string' && L.screenshot.includes(',');
+  const total = data.layers.length;
+  // 1枚目の絵だけ先に読んで、形式と色空間を確かめる（ここで失敗すれば、今の絵はそのまま残る）
+  const firstI = data.layers.findIndex(hasShot);
+  let firstImg = null;
+  if (firstI >= 0){ firstImg = await hp3LayerImage(data.layers[firstI].screenshot, state); data.layers[firstI].screenshot = null; }
+  // 背景色（0〜255 の RGB。透明度は 0〜1 と 0〜255 の両方がある）
+  const col = Array.isArray(data.color) ? data.color : [255, 255, 255, 255];
+  let [br, bg, bb] = [0, 1, 2].map(i => clamp(Math.round(+col[i] || 0), 0, 255)), ba = col.length > 3 ? +col[3] : 255;
+  ba = clamp(ba > 1 ? ba / 255 : ba, 0, 1);
+  if (state.p3 === true) [br, bg, bb] = p3ToSrgb(br, bg, bb, [0, 0, 0]);
+
+  resetDoc(W, H);
+  const ls = [], adjusted = [];
+  let oddBlend = 0, clipN = 0, sizeOdd = 0, failed = 0;
+  const B = makeLayer('背景色'); B.anim = false;
+  if (ba > 0){ B.ctx.fillStyle = `rgba(${br},${bg},${bb},${ba})`; B.ctx.fillRect(0, 0, W, H); }
+  ls.push(B);
+  // 残りは1枚ずつ読んですぐレイヤーに移す（大きな絵でもメモリを使いすぎないように）
+  for (let i = 0; i < total; i++){
+    const S = data.layers[i] || {}, nm = String(S.name || `Layer${i}`).slice(0, 255);
+    setStatus(`HEAVYPAINT のレイヤーを読み込んでいます（${i + 1} / ${total}）…`);
+    let img = null;
+    if (i === firstI){ img = firstImg; firstImg = null; }
+    else if (hasShot(S)){ try { img = await hp3LayerImage(S.screenshot, state); } catch (e){ failed++; } S.screenshot = null; }
+    const L = makeLayer(nm);
+    if (img){
+      if (img.width !== W0 || img.height !== H0) sizeOdd++;
+      if (k === 1 && img.width === W && img.height === H) L.ctx.putImageData(img, 0, 0);
+      else { const c = mk(img.width, img.height); c.getContext('2d').putImageData(img, 0, 0); L.ctx.imageSmoothingQuality = 'high'; L.ctx.drawImage(c, 0, 0, img.width * k, img.height * k); }
+      img = null;
+    }
+    const mode = S.blendMode == null ? 0 : S.blendMode;
+    if (!(mode in HP3_BLEND)) oddBlend++;
+    const pos = S.position || {}, sc = S.scale || {};
+    if (!near(S.hue ?? 0, 0) || !near(S.saturation ?? 1, 1) || !near(S.brightness ?? 1, 1) || !near(S.contrast ?? 1, 1) || !near(S.rotation ?? 0, 0) || !near(pos.x, 0) || !near(pos.y, 0) || !near(sc.x ?? 1, 1) || !near(sc.y ?? 1, 1)) adjusted.push(nm);
+    const clip = pyTruthy(S.clipTo) && ls.length > 1;
+    if (clip) clipN++;
+    Object.assign(L, { visible: S.visible !== false, opacity: clamp(S.opacity == null ? 1 : +S.opacity, 0, 1), blend: HP3_BLEND[mode] || 'source-over', lock: !!S.lockAlpha, clip });
+    ls.push(L);
+  }
+  nameSeq = ls.length;
+  finishDoc(ls, name);
+  const notes = [];
+  if (state.p3) notes.push('色を Display P3 から sRGB に変換');
+  if (state.otherIcc) notes.push(`色のプロファイル「${state.otherIcc}」は変換せずに読み込み`);
+  if (k < 1) notes.push(`大きいため ${Math.round(k * 100)}% に縮小`);
+  if (oddBlend) notes.push(`未対応の合成モード ${oddBlend} 枚は通常に変更`);
+  if (clipN) notes.push(`クリッピング ${clipN} 枚は設定を引き継ぎ（未検証）`);
+  if (adjusted.length) notes.push(`色調補正・移動などの設定は反映されません（${adjusted.slice(0, 3).join('、')}${adjusted.length > 3 ? ' ほか' : ''}）`);
+  if (sizeOdd) notes.push(`大きさの違うレイヤー ${sizeOdd} 枚は左上に合わせて配置`);
+  if (failed) notes.push(`読み込めなかったレイヤー ${failed} 枚は空のまま`);
+  if (state.approx) notes.push('一部のレイヤーは色の数値が少し変わることがあります');
+  const ref = data.reference;
+  if (ref && typeof ref === 'object' && Object.values(ref).some(v => typeof v === 'string' && /\/|http/.test(v))) notes.push('参考画像はファイルに含まれていないため読み込めません');
+  toast(`「${name}」を開きました（レイヤー ${total} 枚＋背景色）` + (notes.length ? `。${notes.join('、')}` : ''));
+}
+
 // --- 開く ---
 async function openFile(f, handle){
   if (/\.(ase|aco|gpl)$/i.test(f.name)){ await importPaletteFile(f); return; }
@@ -4446,8 +4622,9 @@ async function openFile(f, handle){
       toast('ZIPの中に開けるファイルが見つかりません'); return;
     }
     if (ext === 'psd'){ await openPsdBytes(new Uint8Array(await f.arrayBuffer()), name); fileHandle = null; scheduleSave(); return; }
+    if (ext === 'hp3'){ await openHp3(f, name); fileHandle = null; scheduleSave(); return; }
     if ((f.type || '').startsWith('image/') || /^(png|jpe?g|webp|gif|bmp)$/.test(ext)){ await openImageDoc(f, name); fileHandle = null; scheduleSave(); return; }
-    toast('開けるのは KAKOI・PSD・ZIP・PNG・JPEG・WebP です');
+    toast('開けるのは KAKOI・PSD・HEAVYPAINT（.hp3）・ZIP・PNG・JPEG・WebP です');
   } catch (err){ toast('ファイルを開けませんでした：' + ((err && err.message) || '')); }
   finally { setStatus(fileDirty ? '未保存の変更あり' : 'この端末に自動保存済み'); }
 }
@@ -4465,7 +4642,7 @@ async function openDialog(){
   const api = downloadsP ? await downloadsP : null;
   if (!api && typeof window.showOpenFilePicker === 'function'){
     try {
-      const [h] = await window.showOpenFilePicker({ multiple: false, types: [{ description: 'KAKOI・PSD・画像', accept: { 'application/x-kakoi': ['.kakoi'], 'image/vnd.adobe.photoshop': ['.psd'], 'application/zip': ['.zip'], 'image/png': ['.png'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/webp': ['.webp'] } }] });
+      const [h] = await window.showOpenFilePicker({ multiple: false, types: [{ description: 'KAKOI・PSD・HEAVYPAINT・画像', accept: { 'application/x-kakoi': ['.kakoi'], 'image/vnd.adobe.photoshop': ['.psd'], 'application/x-heavypaint': ['.hp3'], 'application/zip': ['.zip'], 'image/png': ['.png'], 'image/jpeg': ['.jpg', '.jpeg'], 'image/webp': ['.webp'] } }] });
       if (h) await openFile(await h.getFile(), h);
       return;
     } catch (err){ if (err && err.name === 'AbortError') return; }
@@ -4565,7 +4742,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 
 /* ================= ダイアログ・トップバー・ステージバー ================= */
 let toastTimer = 0;
-function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), msg.length > 30 ? 3600 : 1900); }
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), msg.length > 60 ? 6500 : msg.length > 30 ? 3600 : 1900); }
 let confirmResolve = null, promptResolve = null;
 function closeModals(){
   for (const m of document.querySelectorAll('.modal.open')) m.classList.remove('open');
