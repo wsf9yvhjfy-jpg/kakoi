@@ -668,7 +668,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.1.1（2026年11月18日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.1.2（2026年11月18日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -1239,10 +1239,25 @@ function newDocument(w, h, bg){
   finishDoc([B, makeLayer()], '無題');
 }
 // --- 絵の色のプロファイル（Display P3 など）。色の数値はそのまま持ち、書き出す PSD・PNG にだけ付ける ---
+// sRGB かどうかは名前ではなく三原色の座標で判断する（「Display P3 Gamut with sRGB Transfer」のように名前に sRGB を含む P3 もあるため）
+function iccIsSrgb(b){
+  try {
+    const dv = new DataView(b.buffer, b.byteOffset, b.byteLength), n = dv.getUint32(128), tags = {};
+    for (let i = 0; i < n && 144 + i * 12 <= b.length; i++){ const e = 132 + i * 12; tags[String.fromCharCode(b[e], b[e + 1], b[e + 2], b[e + 3])] = dv.getUint32(e + 4); }
+    const xyz = k => { const o = tags[k]; return o == null || o + 20 > b.length ? null : [0, 1, 2].map(j => dv.getInt32(o + 8 + j * 4) / 65536); };
+    const P = [xyz('rXYZ'), xyz('gXYZ'), xyz('bXYZ')];
+    if (P.every(Boolean)){
+      const S = [[.4361, .2225, .0139], [.3851, .7169, .0971], [.1431, .0606, .7141]];
+      return P.every((v, i) => v.every((x, j) => Math.abs(x - S[i][j]) < .012));
+    }
+  } catch (e) {}
+  const nm = iccName(b);
+  return /srgb/i.test(nm) && !/p3|adobe|2020|prophoto|wide/i.test(nm);
+}
 let docICC = null;
 function setDocICC(icc){
   const nm = icc && icc.length >= 132 ? iccName(icc) : '';
-  docICC = icc && icc.length >= 132 && !/srgb/i.test(nm) ? { name: nm || '埋め込みプロファイル', bytes: icc } : null;
+  docICC = icc && icc.length >= 132 && !iccIsSrgb(icc) ? { name: nm || '埋め込みプロファイル', bytes: icc } : null;
   const b = $('#docBadge');
   b.hidden = !docICC;
   if (docICC){
@@ -4584,21 +4599,101 @@ async function imageICC(u8){
         p += 2 + len;
       }
       if (parts.length){ parts.sort((a, b) => a.seq - b.seq); const out = new Uint8Array(parts.reduce((t, x) => t + x.d.length, 0)); let o = 0; for (const x of parts){ out.set(x.d, o); o += x.d.length; } return out; }
+    } else if (u8.length > 20 && String.fromCharCode(u8[0], u8[1], u8[2], u8[3]) === 'RIFF' && String.fromCharCode(u8[8], u8[9], u8[10], u8[11]) === 'WEBP'){
+      const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+      for (let p = 12; p + 8 <= u8.length;){
+        const t = String.fromCharCode(u8[p], u8[p + 1], u8[p + 2], u8[p + 3]), len = dv.getUint32(p + 4, true);
+        if (t === 'ICCP') return u8.slice(p + 8, p + 8 + len);
+        p += 8 + len + (len & 1);
+      }
     }
   } catch (e) {}
   return null;
+}
+// WebGL を使って、画像の数値をそのまま取り出す（canvas 経由だと半透明部分の値が丸められるため）
+let glDec = null;
+function glReadback(src, w, h, noConv){
+  try {
+    if (glDec === false) return null;
+    if (!glDec){
+      const c = document.createElement('canvas'); c.width = c.height = 1;
+      const gl = c.getContext('webgl', { premultipliedAlpha: false, antialias: false, depth: false, stencil: false });
+      if (!gl){ glDec = false; return null; }
+      glDec = { gl, tex: gl.createTexture(), fb: gl.createFramebuffer(), max: gl.getParameter(gl.MAX_TEXTURE_SIZE) };
+    }
+    const { gl, tex, fb, max } = glDec;
+    if (gl.isContextLost() || w > max || h > max) return null;
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, noConv ? gl.NONE : gl.BROWSER_DEFAULT_WEBGL);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    let px = null;
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE){ px = new Uint8Array(w * h * 4); gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, px); }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    return px && gl.getError() === gl.NO_ERROR ? px : null;
+  } catch (e){ return null; }
+}
+function releaseGlDec(){
+  if (!glDec) return;
+  try { const x = glDec.gl.getExtension('WEBGL_lose_context'); if (x) x.loseContext(); } catch (e) {}
+  glDec = null;
+}
+// PNG 以外（WebP・JPEG など）をブラウザに読ませる。via＝bitmap（ImageBitmap）か img（img 要素）、conv＝none なら色変換しない指定
+async function browserDecode(bytes, type, via, conv){
+  const blob = new Blob([bytes], { type });
+  let src, w, h, url = null;
+  if (via === 'img'){
+    url = URL.createObjectURL(blob); src = new Image(); src.src = url; await src.decode(); w = src.naturalWidth; h = src.naturalHeight;
+  } else { src = await createImageBitmap(blob, { premultiplyAlpha: 'none', colorSpaceConversion: conv }); w = src.width; h = src.height; }
+  try {
+    let rgba = glReadback(src, w, h, conv === 'none');
+    const exact = !!rgba;
+    if (!rgba){ const c = mk(w, h), x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(src, 0, 0); rgba = x.getImageData(0, 0, w, h).data; }
+    return { w, h, rgba, exact };
+  } finally { if (src.close) src.close(); if (url) URL.revokeObjectURL(url); }
+}
+// このブラウザで「色変換なし」の読み込みが本当に効くかを、最初の1枚で確かめる
+//   bitmap / img ＝その読み方で数値のまま取り出せる、converted ＝取り出せない（ブラウザが sRGB に変換してしまう）
+async function pickDecodeMode(bytes, type){
+  try {
+    const ref = await browserDecode(bytes, type, 'bitmap', 'default');   // ブラウザが色変換した結果
+    const differs = r => {
+      const a = r.rgba, b = ref.rgba; let n = 0, diff = 0;
+      for (let i = 0; i < b.length; i += 4 * 61){
+        if (b[i + 3] !== 255 || a[i + 3] !== 255) continue;
+        const mx = Math.max(b[i], b[i + 1], b[i + 2]), mn = Math.min(b[i], b[i + 1], b[i + 2]);
+        if (mx - mn < 60) continue;
+        n++; diff += Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]);
+      }
+      return n < 50 ? null : diff / n >= 1.5;
+    };
+    for (const via of ['bitmap', 'img']){
+      const d = differs(await browserDecode(bytes, type, via, 'none'));
+      if (d === null) return 'bitmap';   // ほとんど無彩色で見分けられない（どちらでも差はわずか）
+      if (d) return via;
+    }
+    return 'converted';
+  } catch (e){ return 'bitmap'; }
 }
 // 1枚のレイヤー画像 → 上下を戻し、アルファを外した ImageData（色の数値はそのまま）
 async function hp3LayerImage(uri, state){
   const bytes = b64bytes(uri.slice(uri.indexOf(',') + 1)), mime = /^data:([^;,]+)/.exec(uri);
   let dec = await decodePngRaw(bytes);
   if (!dec){
-    // JPEG や想定外の PNG（16bit など）はブラウザに読ませる（色の数値は変換しない）
-    const bmp = await createImageBitmap(new Blob([bytes], { type: mime ? mime[1] : 'image/png' }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
-    const c = mk(bmp.width, bmp.height), x = c.getContext('2d', { willReadFrequently: true });
-    x.drawImage(bmp, 0, 0); if (bmp.close) bmp.close();
-    dec = { w: c.width, h: c.height, rgba: x.getImageData(0, 0, c.width, c.height).data, icc: await imageICC(bytes) };
-    if (!(mime && /jpe?g/i.test(mime[1]))) state.approx = true;
+    // WebP（新しい HEAVYPAINT）・JPEG・想定外の PNG はブラウザに読ませる（色の数値は変換しない）
+    const type = mime ? mime[1] : 'image/png', icc = await imageICC(bytes);
+    const wide = icc && icc.length >= 132 && !iccIsSrgb(icc);
+    if (wide && !state.decodeMode) state.decodeMode = await pickDecodeMode(bytes, type);
+    const mode = wide ? state.decodeMode : 'bitmap';
+    const r = await browserDecode(bytes, type, mode === 'img' ? 'img' : 'bitmap', mode === 'converted' ? 'default' : 'none');
+    if (!r.exact && !/jpe?g/i.test(type)) state.approx = true;
+    if (mode === 'converted') state.converted = true;
+    dec = { w: r.w, h: r.h, rgba: r.rgba, icc: mode === 'converted' ? null : icc };
   }
   // 色のプロファイルはレイヤーごとに数えて、あとで一番多いものを絵の色にする
   if (dec.icc && dec.icc.length >= 132){
@@ -4625,7 +4720,7 @@ async function openHp3(f, name){
   if (!data || typeof data !== 'object' || !Array.isArray(data.layers) || !(+data.width > 0) || !(+data.height > 0)) throw new Error('HEAVYPAINT のファイルとして読み取れません');
   const W0 = Math.round(+data.width), H0 = Math.round(+data.height);
   const k = fitScale(W0, H0), W = Math.max(1, Math.round(W0 * k)), H = Math.max(1, Math.round(H0 * k));
-  const state = { profiles: new Map(), noIcc: 0, approx: false };
+  const state = { profiles: new Map(), noIcc: 0, approx: false, decodeMode: null, converted: false };
   const near = (a, b) => Math.abs((+a || 0) - b) < 1e-6;
   const hasShot = L => L && typeof L.screenshot === 'string' && L.screenshot.includes(',');
   const total = data.layers.length;
@@ -4672,6 +4767,7 @@ async function openHp3(f, name){
   const isP3 = e => /p3/i.test(iccName(e.bytes));
   for (const e of state.profiles.values()) if (!best || e.n > best.n || (e.n === best.n && isP3(e) && !isP3(best))) best = e;
   setDocICC(best ? best.bytes : null);
+  releaseGlDec();
   nameSeq = ls.length;
   finishDoc(ls, name);
   const notes = [];
@@ -4680,7 +4776,8 @@ async function openHp3(f, name){
     if (state.profiles.size > 1) t += `。色の情報が違うレイヤーもありますが、多いほうに合わせました`;
     else if (state.noIcc) t += `。色の情報が無いレイヤー ${state.noIcc} 枚も同じ色として扱います`;
     notes.push(t);
-  } else if (best === null && (total - failed) > 0) notes.push('色の情報（プロファイル）が見つからないため、sRGB の絵として読み込みました');
+  } else if (state.converted) notes.push('このブラウザでは P3 の色の数値をそのまま取り出せないため、sRGB に変換して読み込みました（画面の見た目は HEAVYPAINT に近くなり、書き出しは sRGB になります）');
+  else if (best === null && (total - failed) > 0) notes.push('色の情報（プロファイル）が見つからないため、sRGB の絵として読み込みました');
   if (k < 1) notes.push(`大きいため ${Math.round(k * 100)}% に縮小`);
   if (oddBlend) notes.push(`未対応の合成モード ${oddBlend} 枚は通常に変更`);
   if (clipN) notes.push(`クリッピング ${clipN} 枚は設定を引き継ぎ（未検証）`);
