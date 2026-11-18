@@ -668,7 +668,7 @@ select,.field{height:29px;border:1px solid var(--line);background:var(--field);b
       <dt>⌘E</dt><dd>PSDで書き出し（レイヤーつき）。⇧⌘E で PNG</dd>
     </dl>
     <p class="note">保存先を選ぶ画面は、Chrome・Edge でこのファイルを直接開いたときに出ます。Claude の画面の中では、ブラウザのダウンロードとして保存されます（そのため KAKOI は .kakoi.zip、PSD は ZIP に入った形になります）。作業中の絵はこのブラウザにも自動保存されます。</p>
-    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.1（2026年11月18日）</p>
+    <p class="note" id="appVersion" style="margin-top:12px;color:var(--ink-3)">KAKOI 試作版　バージョン 5.1.1（2026年11月18日）</p>
     <div class="dlg-actions"><button class="mini" id="btnUpdate" title="公開されている最新版を読み込み直します">最新版に更新</button><button class="primary" id="helpClose">閉じる</button></div>
   </div>
 </div>
@@ -4564,19 +4564,47 @@ function b64bytes(s){
   for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
   return u8;
 }
+// 画像ファイル（PNG・JPEG）に埋め込まれた色のプロファイル（ICC）を取り出す
+async function imageICC(u8){
+  try {
+    if (u8[0] === 0x89 && u8[1] === 0x50){
+      const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+      for (let p = 8; p + 12 <= u8.length;){
+        const len = dv.getUint32(p), type = String.fromCharCode(u8[p + 4], u8[p + 5], u8[p + 6], u8[p + 7]);
+        if (type === 'iCCP'){ const d = u8.subarray(p + 8, p + 8 + len), z = d.indexOf(0); return z > 0 && d[z + 1] === 0 ? await inflateZ(d.subarray(z + 2)) : null; }
+        if (type === 'IDAT' || type === 'IEND') return null;
+        p += 12 + len;
+      }
+    } else if (u8[0] === 0xFF && u8[1] === 0xD8){
+      const parts = [];
+      for (let p = 2; p + 4 <= u8.length && u8[p] === 0xFF;){
+        const m = u8[p + 1]; if (m === 0xDA || m === 0xD9) break;
+        const len = (u8[p + 2] << 8) | u8[p + 3];
+        if (m === 0xE2 && len > 16 && String.fromCharCode(...u8.subarray(p + 4, p + 15)) === 'ICC_PROFILE') parts.push({ seq: u8[p + 16], d: u8.subarray(p + 18, p + 2 + len) });
+        p += 2 + len;
+      }
+      if (parts.length){ parts.sort((a, b) => a.seq - b.seq); const out = new Uint8Array(parts.reduce((t, x) => t + x.d.length, 0)); let o = 0; for (const x of parts){ out.set(x.d, o); o += x.d.length; } return out; }
+    }
+  } catch (e) {}
+  return null;
+}
 // 1枚のレイヤー画像 → 上下を戻し、アルファを外した ImageData（色の数値はそのまま）
 async function hp3LayerImage(uri, state){
-  const bytes = b64bytes(uri.slice(uri.indexOf(',') + 1));
+  const bytes = b64bytes(uri.slice(uri.indexOf(',') + 1)), mime = /^data:([^;,]+)/.exec(uri);
   let dec = await decodePngRaw(bytes);
   if (!dec){
-    // 想定外の PNG（16bit など）はブラウザに読ませる
-    const bmp = await createImageBitmap(new Blob([bytes], { type: 'image/png' }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+    // JPEG や想定外の PNG（16bit など）はブラウザに読ませる（色の数値は変換しない）
+    const bmp = await createImageBitmap(new Blob([bytes], { type: mime ? mime[1] : 'image/png' }), { premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
     const c = mk(bmp.width, bmp.height), x = c.getContext('2d', { willReadFrequently: true });
     x.drawImage(bmp, 0, 0); if (bmp.close) bmp.close();
-    dec = { w: c.width, h: c.height, rgba: x.getImageData(0, 0, c.width, c.height).data, icc: null };
-    state.approx = true;
+    dec = { w: c.width, h: c.height, rgba: x.getImageData(0, 0, c.width, c.height).data, icc: await imageICC(bytes) };
+    if (!(mime && /jpe?g/i.test(mime[1]))) state.approx = true;
   }
-  if (!state.icc && dec.icc) state.icc = dec.icc;
+  // 色のプロファイルはレイヤーごとに数えて、あとで一番多いものを絵の色にする
+  if (dec.icc && dec.icc.length >= 132){
+    const key = dec.icc.length + ':' + crc32(dec.icc), e = state.profiles.get(key);
+    if (e) e.n++; else state.profiles.set(key, { bytes: dec.icc, n: 1 });
+  } else state.noIcc++;
   const { w, h, rgba } = dec, img = new ImageData(w, h), d = img.data;
   for (let y = 0; y < h; y++){
     let s = (h - 1 - y) * w * 4, o = y * w * 4;
@@ -4597,7 +4625,7 @@ async function openHp3(f, name){
   if (!data || typeof data !== 'object' || !Array.isArray(data.layers) || !(+data.width > 0) || !(+data.height > 0)) throw new Error('HEAVYPAINT のファイルとして読み取れません');
   const W0 = Math.round(+data.width), H0 = Math.round(+data.height);
   const k = fitScale(W0, H0), W = Math.max(1, Math.round(W0 * k)), H = Math.max(1, Math.round(H0 * k));
-  const state = { icc: null, approx: false };
+  const state = { profiles: new Map(), noIcc: 0, approx: false };
   const near = (a, b) => Math.abs((+a || 0) - b) < 1e-6;
   const hasShot = L => L && typeof L.screenshot === 'string' && L.screenshot.includes(',');
   const total = data.layers.length;
@@ -4611,7 +4639,6 @@ async function openHp3(f, name){
   ba = clamp(ba > 1 ? ba / 255 : ba, 0, 1);
 
   resetDoc(W, H);
-  setDocICC(state.icc);
   const ls = [], adjusted = [];
   let oddBlend = 0, clipN = 0, sizeOdd = 0, failed = 0;
   const B = makeLayer('背景色'); B.anim = false;
@@ -4640,17 +4667,27 @@ async function openHp3(f, name){
     Object.assign(L, { visible: S.visible !== false, opacity: clamp(S.opacity == null ? 1 : +S.opacity, 0, 1), blend: HP3_BLEND[mode] || 'source-over', lock: !!S.lockAlpha, clip });
     ls.push(L);
   }
+  // 全レイヤーを見てから絵の色を決める（一番下のレイヤーに色の情報が無くても見落とさない）
+  let best = null;
+  const isP3 = e => /p3/i.test(iccName(e.bytes));
+  for (const e of state.profiles.values()) if (!best || e.n > best.n || (e.n === best.n && isP3(e) && !isP3(best))) best = e;
+  setDocICC(best ? best.bytes : null);
   nameSeq = ls.length;
   finishDoc(ls, name);
   const notes = [];
-  if (docICC) notes.push(`色は「${docICC.name}」のまま（書き出す PSD・PNG にこの色情報を付けます）`);
+  if (docICC){
+    let t = `色は「${docICC.name}」のまま（書き出す PSD・PNG にこの色情報を付けます）`;
+    if (state.profiles.size > 1) t += `。色の情報が違うレイヤーもありますが、多いほうに合わせました`;
+    else if (state.noIcc) t += `。色の情報が無いレイヤー ${state.noIcc} 枚も同じ色として扱います`;
+    notes.push(t);
+  } else if (best === null && (total - failed) > 0) notes.push('色の情報（プロファイル）が見つからないため、sRGB の絵として読み込みました');
   if (k < 1) notes.push(`大きいため ${Math.round(k * 100)}% に縮小`);
   if (oddBlend) notes.push(`未対応の合成モード ${oddBlend} 枚は通常に変更`);
   if (clipN) notes.push(`クリッピング ${clipN} 枚は設定を引き継ぎ（未検証）`);
   if (adjusted.length) notes.push(`色調補正・移動などの設定は反映されません（${adjusted.slice(0, 3).join('、')}${adjusted.length > 3 ? ' ほか' : ''}）`);
   if (sizeOdd) notes.push(`大きさの違うレイヤー ${sizeOdd} 枚は左上に合わせて配置`);
   if (failed) notes.push(`読み込めなかったレイヤー ${failed} 枚は空のまま`);
-  if (state.approx) notes.push('一部のレイヤーは色の数値が少し変わることがあります（色のプロファイルも読み取れません）');
+  if (state.approx) notes.push('一部のレイヤーは色の数値が少し変わることがあります');
   const ref = data.reference;
   if (ref && typeof ref === 'object' && Object.values(ref).some(v => typeof v === 'string' && /\/|http/.test(v))) notes.push('参考画像はファイルに含まれていないため読み込めません');
   toast(`「${name}」を開きました（レイヤー ${total} 枚＋背景色）` + (notes.length ? `。${notes.join('、')}` : ''));
